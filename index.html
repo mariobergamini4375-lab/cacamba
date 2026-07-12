@@ -2684,6 +2684,7 @@
           senha: '202606',
           role: 'admin',
           bloqueado: false,
+          ownerId: null, // Será definido após criação do admin
           permissoes: {
             dashboard: true,
             cadastro: true,
@@ -2702,7 +2703,6 @@
             frota_manutencao: true,
             frota_configuracoes: true
           },
-          ownerId: null,
           createdAt: new Date().toISOString()
         }],
         cacambas: [],
@@ -2792,9 +2792,15 @@
           return false;
         }
 
-        // Garantir que o admin padrão existe
+        // Garantir que o admin padrão existe e tem ownerId
         if (!dadosLocais.users || !dadosLocais.users.length) {
           dadosLocais.users = defaultDB().users;
+        }
+
+        // Garantir que o admin tenha ownerId
+        const adminUser = dadosLocais.users.find(u => u.role === 'admin');
+        if (adminUser && !adminUser.ownerId) {
+          adminUser.ownerId = adminUser.id || uid();
         }
 
         // Garantir que todos os arrays existem
@@ -2835,6 +2841,10 @@
             // Se não migrou, cria um banco padrão
             console.log('📝 Criando banco de dados padrão...');
             dados = defaultDB();
+            // Garantir ownerId do admin
+            if (dados.users && dados.users.length > 0) {
+              dados.users[0].ownerId = dados.users[0].id || uid();
+            }
             await firestoreSaveDB(dados);
           }
         }
@@ -2885,7 +2895,7 @@
     }
 
     /* ============================================================
-       CONTROLE DE SESSÃO E PROPRIETÁRIO
+       CONTROLE DE SESSÃO E PROPRIETÁRIO - CORRIGIDO
     ============================================================ */
 
     let session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
@@ -2933,14 +2943,15 @@
     }
 
     /* ============================================================
-       FUNÇÕES DE ISOLAMENTO - FILTROS POR PROPRIETÁRIO
+       FUNÇÕES DE ISOLAMENTO - FILTROS POR PROPRIETÁRIO (CORRIGIDAS)
     ============================================================ */
 
     function getCurrentOwnerId() {
       if (!session) return null;
       const user = getLoggedUser();
       if (!user) return null;
-      if (user.role === 'admin') return null;
+      // ADMIN: retorna o ID do próprio admin para isolar seus dados
+      if (user.role === 'admin') return user.id;
       if (user.role === 'user') return user.id;
       if (user.role === 'dependente') {
         const dependente = DB.dependentes.find(d => d.id === user.id);
@@ -2959,7 +2970,8 @@
 
     function filterByOwner(items) {
       const ownerId = getCurrentOwnerId();
-      if (!ownerId) return items;
+      // Se não há ownerId (usuário não logado), retorna array vazio
+      if (!ownerId) return [];
       return items.filter(item => {
         const itemOwnerId = item.ownerId || null;
         return itemOwnerId === ownerId;
@@ -2970,6 +2982,11 @@
       const ownerId = getCurrentOwnerId();
       if (ownerId) {
         item.ownerId = ownerId;
+        item.createdBy = getLoggedUser()?.nome || 'Sistema';
+        item.createdAt = new Date().toISOString();
+        item.userRole = getCurrentOwnerType() || 'user';
+      } else {
+        throw new Error('Usuário não autenticado');
       }
       return item;
     }
@@ -2977,7 +2994,7 @@
     function hasAccessToItem(item) {
       const ownerId = getCurrentOwnerId();
       const itemOwnerId = item.ownerId || null;
-      if (!ownerId) return true;
+      if (!ownerId) return false;
       return itemOwnerId === ownerId;
     }
 
@@ -3038,57 +3055,174 @@
     }
 
     /* ============================================================
-       FUNÇÕES DE ACESSO AOS DADOS (COM ISOLAMENTO)
+       FUNÇÕES DE ACESSO AOS DADOS (COM ISOLAMENTO) - CORRIGIDAS
     ============================================================ */
 
-    function getCacambas() { return filterByOwner(DB.cacambas); }
+    function getCacambas() {
+      try {
+        return filterByOwner(DB.cacambas || []);
+      } catch (e) {
+        console.error('Erro ao acessar cacambas:', e);
+        return [];
+      }
+    }
 
-    function getMotoristas() { return filterByOwner(DB.motoristas); }
+    function getMotoristas() {
+      try {
+        return filterByOwner(DB.motoristas || []);
+      } catch (e) {
+        console.error('Erro ao acessar motoristas:', e);
+        return [];
+      }
+    }
 
-    function getPlanos() { return filterByOwner(DB.planos); }
+    function getPlanos() {
+      try {
+        return filterByOwner(DB.planos || []);
+      } catch (e) {
+        console.error('Erro ao acessar planos:', e);
+        return [];
+      }
+    }
 
-    function getLocais() { return filterByOwner(DB.locais); }
+    function getLocais() {
+      try {
+        return filterByOwner(DB.locais || []);
+      } catch (e) {
+        console.error('Erro ao acessar locais:', e);
+        return [];
+      }
+    }
 
-    function getTiposMateriais() { return filterByOwner(DB.tiposMateriais); }
+    function getTiposMateriais() {
+      try {
+        return filterByOwner(DB.tiposMateriais || []);
+      } catch (e) {
+        console.error('Erro ao acessar tipos de materiais:', e);
+        return [];
+      }
+    }
 
-    function getClientes() { return filterByOwner(DB.clientes); }
+    function getClientes() {
+      try {
+        return filterByOwner(DB.clientes || []);
+      } catch (e) {
+        console.error('Erro ao acessar clientes:', e);
+        return [];
+      }
+    }
 
-    function getIntercorrencias() { return filterByOwner(DB.intercorrencias); }
+    function getIntercorrencias() {
+      try {
+        return filterByOwner(DB.intercorrencias || []);
+      } catch (e) {
+        console.error('Erro ao acessar intercorrências:', e);
+        return [];
+      }
+    }
 
-    function getCidades() { return filterByOwner(DB.cidades); }
+    function getCidades() {
+      try {
+        return filterByOwner(DB.cidades || []);
+      } catch (e) {
+        console.error('Erro ao acessar cidades:', e);
+        return [];
+      }
+    }
 
     function getDependentes() {
       const ownerId = getCurrentOwnerId();
+      // Admin nunca deve ver dependentes
       if (getCurrentOwnerType() === 'admin') return [];
-      return DB.dependentes.filter(d => d.ownerId === ownerId);
+      try {
+        return DB.dependentes.filter(d => d.ownerId === ownerId);
+      } catch (e) {
+        console.error('Erro ao acessar dependentes:', e);
+        return [];
+      }
     }
 
-    function getVeiculos() { return filterByOwner(DB.veiculos); }
+    function getVeiculos() {
+      try {
+        return filterByOwner(DB.veiculos || []);
+      } catch (e) {
+        console.error('Erro ao acessar veículos:', e);
+        return [];
+      }
+    }
 
-    function getMotoristasFrota() { return filterByOwner(DB.motoristasFrota); }
+    function getMotoristasFrota() {
+      try {
+        return filterByOwner(DB.motoristasFrota || []);
+      } catch (e) {
+        console.error('Erro ao acessar motoristas da frota:', e);
+        return [];
+      }
+    }
 
-    function getAbastecimentos() { return filterByOwner(DB.abastecimentos); }
+    function getAbastecimentos() {
+      try {
+        return filterByOwner(DB.abastecimentos || []);
+      } catch (e) {
+        console.error('Erro ao acessar abastecimentos:', e);
+        return [];
+      }
+    }
 
-    function getOrdensServico() { return filterByOwner(DB.ordensServico); }
+    function getOrdensServico() {
+      try {
+        return filterByOwner(DB.ordensServico || []);
+      } catch (e) {
+        console.error('Erro ao acessar ordens de serviço:', e);
+        return [];
+      }
+    }
 
-    function getHistoricoOS() { return filterByOwner(DB.historicoOS); }
+    function getHistoricoOS() {
+      try {
+        return filterByOwner(DB.historicoOS || []);
+      } catch (e) {
+        console.error('Erro ao acessar histórico OS:', e);
+        return [];
+      }
+    }
 
     // ===== FUNÇÕES DO MÓDULO SERVIÇOS =====
 
     function getOrcamentos() {
-      return filterByOwner(DB.servicos_orcamentos || []);
+      try {
+        return filterByOwner(DB.servicos_orcamentos || []);
+      } catch (e) {
+        console.error('Erro ao acessar orçamentos:', e);
+        return [];
+      }
     }
 
     function getAgendamentos() {
-      return filterByOwner(DB.servicos_agendados || []);
+      try {
+        return filterByOwner(DB.servicos_agendados || []);
+      } catch (e) {
+        console.error('Erro ao acessar agendamentos:', e);
+        return [];
+      }
     }
 
     function getConcluidos() {
-      return filterByOwner(DB.servicos_concluidos || []);
+      try {
+        return filterByOwner(DB.servicos_concluidos || []);
+      } catch (e) {
+        console.error('Erro ao acessar concluídos:', e);
+        return [];
+      }
     }
 
     function getTiposServico() {
-      return filterByOwner(DB.servicos_tipos || []);
+      try {
+        return filterByOwner(DB.servicos_tipos || []);
+      } catch (e) {
+        console.error('Erro ao acessar tipos de serviço:', e);
+        return [];
+      }
     }
 
     async function getServicosConfiguracoes() {
@@ -3099,6 +3233,7 @@
         return servicosConfiguracoes;
       }
       // Criar configurações padrão
+      const ownerId = getCurrentOwnerId();
       const defaultConfig = {
         id: uid(),
         horarioAviso: '00:10',
@@ -3110,7 +3245,7 @@
         tempoMaximoServico: 8,
         numeracaoAutomatica: true,
         prefixoOrcamento: 'ORC-',
-        ownerId: getCurrentOwnerId()
+        ownerId: ownerId
       };
       if (!DB.servicos_configuracoes) DB.servicos_configuracoes = [];
       DB.servicos_configuracoes.push(defaultConfig);
@@ -4165,13 +4300,14 @@
     }
 
     /* ============================================================
-       DASHBOARD
+       DASHBOARD - CORRIGIDO (usando getCacambas() que já filtra)
     ============================================================ */
 
     function renderDashboard() {
-      const t = todayStr();
+      // getCacambas() agora retorna apenas os registros do usuário autenticado
       const cacambas = getCacambas();
 
+      const t = todayStr();
       const aColocarHoje = cacambas.filter(c => c.status === 'cadastrado' && c.dataColocacao === t && !c.excluido)
         .length;
       const colocadasAtivas = cacambas.filter(c => c.status === 'colocado' && !c.excluido).length;
@@ -4290,6 +4426,15 @@
     function openClienteForm(id) {
       const cacambas = getCacambas();
       const c = id ? cacambas.find(x => x.id === id) : null;
+
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA
+      if (id && c) {
+        if (!hasAccessToItem(c)) {
+          toast('Acesso negado.', true);
+          return;
+        }
+      }
+
       const planoId = c ? c.planoId || '' : '';
       const clientes = getClientes();
 
@@ -4541,6 +4686,8 @@
       if (id) {
         const c = cacambas.find(x => x.id === id);
         if (!c) { toast('Registro não encontrado.', true); return; }
+        // 🔒 VERIFICAÇÃO DE SEGURANÇA
+        if (!hasAccessToItem(c)) { toast('Acesso negado.', true); return; }
         Object.assign(c, {
           nome,
           whatsapp,
@@ -4556,7 +4703,9 @@
           tipoPagamento,
           tipoMaterial,
           numeroCacamba,
-          observacao
+          observacao,
+          updatedAt: new Date().toISOString(),
+          updatedBy: getLoggedUser()?.nome || 'Sistema'
         });
         await saveDB(DB);
         toast('Cadastro atualizado com sucesso.');
@@ -5209,6 +5358,9 @@
       const c = cacambas.find(x => x.id === id);
       if (!c) { toast('Registro não encontrado.', true); return; }
 
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA
+      if (!hasAccessToItem(c)) { toast('Acesso negado.', true); return; }
+
       const intercorrenciaAtual = c.intercorrencia || 'nao_houve';
 
       openModal(`
@@ -5240,6 +5392,9 @@
       const cacambas = getCacambas();
       const c = cacambas.find(x => x.id === id);
       if (!c) { toast('Registro não encontrado.', true); return; }
+
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA
+      if (!hasAccessToItem(c)) { toast('Acesso negado.', true); return; }
 
       c.nome = document.getElementById('f-nome').value.trim();
       c.rua = document.getElementById('f-rua').value.trim();
@@ -5374,6 +5529,12 @@
         return;
       }
 
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA
+      if (!hasAccessToItem(c)) {
+        toast('Acesso negado.', true);
+        return;
+      }
+
       openModal(`
                             <div class="modal-head">
                               <h3>Confirmar Exclusão</h3>
@@ -5411,6 +5572,13 @@
       const c = cacambas.find(x => x.id === id);
       if (!c) {
         toast('Registro não encontrado.', true);
+        closeModal();
+        return;
+      }
+
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA
+      if (!hasAccessToItem(c)) {
+        toast('Acesso negado.', true);
         closeModal();
         return;
       }
@@ -5600,12 +5768,16 @@
         return;
       }
 
-      const novoItem = { id: uid(), nome: val };
-      addOwnerId(novoItem);
-      DB.cidades.push(novoItem);
-      await saveDB(DB);
-      toast('Cidade adicionada com sucesso.');
-      renderConfiguracoes();
+      try {
+        const novoItem = { id: uid(), nome: val };
+        addOwnerId(novoItem);
+        DB.cidades.push(novoItem);
+        await saveDB(DB);
+        toast('Cidade adicionada com sucesso.');
+        renderConfiguracoes();
+      } catch (e) {
+        toast('Erro ao adicionar cidade: ' + e.message, true);
+      }
     }
     window.addCidade = addCidade;
 
@@ -5707,12 +5879,16 @@
         return;
       }
 
-      const novoItem = { id: uid(), nome: val };
-      addOwnerId(novoItem);
-      DB.intercorrencias.push(novoItem);
-      await saveDB(DB);
-      toast('Intercorrência adicionada com sucesso.');
-      renderConfiguracoes();
+      try {
+        const novoItem = { id: uid(), nome: val };
+        addOwnerId(novoItem);
+        DB.intercorrencias.push(novoItem);
+        await saveDB(DB);
+        toast('Intercorrência adicionada com sucesso.');
+        renderConfiguracoes();
+      } catch (e) {
+        toast('Erro ao adicionar intercorrência: ' + e.message, true);
+      }
     }
     window.addIntercorrencia = addIntercorrencia;
 
@@ -5819,12 +5995,16 @@
         return;
       }
 
-      const novoItem = { id: uid(), nome, dias, valor };
-      addOwnerId(novoItem);
-      DB.planos.push(novoItem);
-      await saveDB(DB);
-      toast('Plano adicionado com sucesso.');
-      renderConfiguracoes();
+      try {
+        const novoItem = { id: uid(), nome, dias, valor };
+        addOwnerId(novoItem);
+        DB.planos.push(novoItem);
+        await saveDB(DB);
+        toast('Plano adicionado com sucesso.');
+        renderConfiguracoes();
+      } catch (e) {
+        toast('Erro ao adicionar plano: ' + e.message, true);
+      }
     }
     window.addPlano = addPlano;
 
@@ -5847,12 +6027,16 @@
         return;
       }
 
-      const novoItem = { id: uid(), [key]: val };
-      addOwnerId(novoItem);
-      DB[list].push(novoItem);
-      await saveDB(DB);
-      toast('Adicionado com sucesso.');
-      renderConfiguracoes();
+      try {
+        const novoItem = { id: uid(), [key]: val };
+        addOwnerId(novoItem);
+        DB[list].push(novoItem);
+        await saveDB(DB);
+        toast('Adicionado com sucesso.');
+        renderConfiguracoes();
+      } catch (e) {
+        toast('Erro ao adicionar: ' + e.message, true);
+      }
     }
     window.addConfigItem = addConfigItem;
 
@@ -5873,7 +6057,7 @@
     window.removeConfigItem = removeConfigItem;
 
     /* ============================================================
-       USUÁRIOS - ADMIN
+       USUÁRIOS - ADMIN (CORRIGIDO)
     ============================================================ */
 
     const PERM_LABELS = {
@@ -5911,7 +6095,8 @@
         return;
       }
 
-      const list = DB.users.filter(u => u.role === 'user' && u.ownerId === null);
+      // Mostrar apenas usuários com role 'user' e ownerId igual ao admin
+      const list = DB.users.filter(u => u.role === 'user' && u.ownerId === user.id);
 
       document.getElementById('content').innerHTML = `
                         <div class="page-head">
@@ -5943,7 +6128,7 @@
       const user = getLoggedUser();
       if (!user || user.role !== 'admin') { toast('Acesso negado.', true); return; }
 
-      const u = id ? DB.users.find(x => x.id === id) : null;
+      const u = id ? DB.users.find(x => x.id === id && x.ownerId === user.id) : null;
       const perms = u ? u.permissoes : {
         dashboard: true,
         cadastro: true,
@@ -5960,69 +6145,14 @@
         frota_relatorio_abastecimento: false,
         frota_manutencao: false,
         frota_configuracoes: false,
-        // Novas permissões de serviços
         servicos_orcamento: false,
         servicos_orcamentos_gerados: false,
         servicos_realizar: false,
         servicos_concluidos: false,
         servicos_configuracoes: false,
-        // Novas permissões de manutenção
         frota_os: false,
         frota_historico_os: false,
         frota_relatorio_os: false
-      };
-
-      // ============================================================
-      // NOVA ESTRUTURA DE PERMISSÕES ORGANIZADA POR MÓDULOS
-      // ============================================================
-
-      // Mapeamento dos módulos e suas permissões
-      const modules = {
-        dashboard: {
-          icon: '📊',
-          label: 'Dashboard',
-          permissions: ['dashboard']
-        },
-        cacambas: {
-          icon: '🚛',
-          label: 'Caçambas',
-          permissions: ['cadastro', 'colocacao', 'remocao', 'geral', 'configuracoes', 'excluidos', 'financeiro']
-        },
-        servicos: {
-          icon: '🛠',
-          label: 'Serviços',
-          permissions: ['servicos_orcamento', 'servicos_orcamentos_gerados', 'servicos_realizar', 'servicos_concluidos',
-            'servicos_configuracoes'
-          ]
-        },
-        frota: {
-          icon: '🚚',
-          label: 'Frota',
-          submodules: {
-            abastecimento: {
-              label: 'Abastecimento',
-              permissions: ['frota_abastecimento', 'frota_relatorio_abastecimento']
-            },
-            manutencao: {
-              label: 'Manutenção',
-              permissions: ['frota_os', 'frota_historico_os', 'frota_relatorio_os']
-            },
-            configuracoes: {
-              label: 'Configurações',
-              permissions: ['frota_configuracoes']
-            }
-          }
-        },
-        configuracoes: {
-          icon: '⚙',
-          label: 'Configurações',
-          permissions: ['configuracoes']
-        },
-        usuarios_dependentes: {
-          icon: '👥',
-          label: 'Usuários / Dependentes',
-          permissions: ['dependentes']
-        }
       };
 
       // Construir o HTML dos cards de permissões
@@ -6182,7 +6312,6 @@
       const email = document.getElementById('u-email').value.trim().toLowerCase();
       const senha = document.getElementById('u-senha').value;
 
-      // Coletar permissões - Mapeamento completo de todas as permissões
       const allPermKeys = [
         'dashboard', 'cadastro', 'colocacao', 'remocao',
         'geral', 'configuracoes', 'excluidos', 'financeiro', 'dependentes',
@@ -6200,16 +6329,21 @@
 
       if (!nome || !email) { toast('Preencha nome e e-mail.', true); return; }
 
-      const exists = DB.users.find(u => u.email.toLowerCase() === email && u.id !== id && u.role === 'user');
+      // Verificar se já existe usuário com este email (apenas entre os usuários do mesmo admin)
+      const exists = DB.users.find(u => u.email.toLowerCase() === email && u.id !== id && u.role === 'user' && u.ownerId === user.id);
       if (exists) { toast('Já existe um usuário com este e-mail.', true); return; }
 
       if (id) {
         const u = DB.users.find(x => x.id === id);
-        if (!u || u.role !== 'user') { toast('Usuário não encontrado.', true); return; }
+        if (!u || u.role !== 'user' || u.ownerId !== user.id) {
+          toast('Usuário não encontrado.', true);
+          return;
+        }
         u.nome = nome;
         u.email = email;
         u.permissoes = permissoes;
         if (senha) u.senha = senha;
+        await saveDB(DB);
         toast('Usuário atualizado.');
       } else {
         if (!senha) { toast('Defina uma senha para o novo usuário.', true); return; }
@@ -6221,22 +6355,25 @@
           role: 'user',
           bloqueado: false,
           permissoes,
-          ownerId: null,
+          ownerId: user.id, // 🔒 Vincula ao admin que está criando
           createdAt: new Date().toISOString()
         };
         DB.users.push(novoUsuario);
+        await saveDB(DB);
         toast('Usuário cadastrado com sucesso.');
       }
 
-      await saveDB(DB);
       closeModal();
       boot();
     }
     window.saveUsuario = saveUsuario;
 
     async function toggleBloqueioUsuario(id) {
+      const user = getLoggedUser();
+      if (!user || user.role !== 'admin') { toast('Acesso negado.', true); return; }
+
       const u = DB.users.find(x => x.id === id);
-      if (!u || u.role !== 'user') { toast('Usuário não encontrado.', true); return; }
+      if (!u || u.role !== 'user' || u.ownerId !== user.id) { toast('Usuário não encontrado.', true); return; }
       u.bloqueado = !u.bloqueado;
       await saveDB(DB);
       toast(u.bloqueado ? 'Usuário bloqueado.' : 'Usuário desbloqueado.');
@@ -6245,8 +6382,11 @@
     window.toggleBloqueioUsuario = toggleBloqueioUsuario;
 
     async function resetSenhaUsuario(id) {
+      const user = getLoggedUser();
+      if (!user || user.role !== 'admin') { toast('Acesso negado.', true); return; }
+
       const u = DB.users.find(x => x.id === id);
-      if (!u || u.role !== 'user') { toast('Usuário não encontrado.', true); return; }
+      if (!u || u.role !== 'user' || u.ownerId !== user.id) { toast('Usuário não encontrado.', true); return; }
 
       const novaSenha = prompt('Digite a nova senha para o usuário ' + u.nome + ':');
       if (novaSenha === null) return;
@@ -6269,7 +6409,7 @@
       if (!user || user.role !== 'admin') { toast('Acesso negado.', true); return; }
 
       const u = DB.users.find(x => x.id === id);
-      if (!u || u.role !== 'user') { toast('Usuário não encontrado.', true); return; }
+      if (!u || u.role !== 'user' || u.ownerId !== user.id) { toast('Usuário não encontrado.', true); return; }
 
       const ownerId = u.id;
       DB.cacambas = DB.cacambas.filter(c => c.ownerId !== ownerId);
@@ -6296,13 +6436,13 @@
     window.deleteUsuario = deleteUsuario;
 
     /* ============================================================
-       DEPENDENTES - APENAS USUÁRIO PRINCIPAL PODE ACESSAR
+       DEPENDENTES - APENAS USUÁRIO PRINCIPAL PODE ACESSAR (CORRIGIDO)
     ============================================================ */
 
     function renderDependentes() {
       const user = getLoggedUser();
 
-      // VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
       if (!user || user.role !== 'user') {
         toast('Acesso negado.', true);
         currentView = 'dashboard';
@@ -6341,10 +6481,14 @@
                       `;
     }
 
+    /* ============================================================
+       SISTEMA DE PERMISSÕES DO DEPENDENTE - IDÊNTICO AO ADMINISTRADOR
+       ============================================================ */
+
     function openDependenteForm(id) {
       const user = getLoggedUser();
 
-      // VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
       if (!user || user.role !== 'user') {
         toast('Acesso negado.', true);
         closeModal();
@@ -6353,6 +6497,13 @@
 
       const dependentes = getDependentes();
       const d = id ? dependentes.find(x => x.id === id) : null;
+
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Se for edição, verifica se o dependente pertence ao usuário
+      if (id && d && !hasAccessToItem(d)) {
+        toast('Acesso negado.', true);
+        closeModal();
+        return;
+      }
 
       const perms = d ? d.permissoes : {
         dashboard: true,
@@ -6368,38 +6519,175 @@
         frota_abastecimento: false,
         frota_relatorio_abastecimento: false,
         frota_manutencao: false,
-        frota_configuracoes: false
+        frota_configuracoes: false,
+        servicos_orcamento: false,
+        servicos_orcamentos_gerados: false,
+        servicos_realizar: false,
+        servicos_concluidos: false,
+        servicos_configuracoes: false,
+        frota_os: false,
+        frota_historico_os: false,
+        frota_relatorio_os: false
       };
 
+      // ===== CONSTRUIR O MESMO LAYOUT DE PERMISSÕES DO ADMIN =====
+      let permissoesHtml = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+      `;
+
+      // Card Dashboard
+      permissoesHtml += `
+        <div class="card" style="padding:12px;">
+          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
+            <span>📊</span> Dashboard
+          </h4>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <label class="checkline" style="padding:2px 0;">
+              <input type="checkbox" id="perm-dashboard" ${perms.dashboard ? 'checked' : ''}> Dashboard
+            </label>
+          </div>
+        </div>
+      `;
+
+      // Card Caçambas
+      const cacambasPerms = ['cadastro', 'colocacao', 'remocao', 'geral', 'configuracoes', 'excluidos', 'financeiro'];
+      const cacambasLabels = {
+        cadastro: 'Cadastro de Clientes',
+        colocacao: 'Colocação',
+        remocao: 'Remoção',
+        geral: 'Geral',
+        configuracoes: 'Configurações',
+        excluidos: 'Excluídos',
+        financeiro: 'Financeiro'
+      };
+
+      permissoesHtml += `
+        <div class="card" style="padding:12px;">
+          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
+            <span>🚛</span> Caçambas
+          </h4>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            ${cacambasPerms.map(key => `
+              <label class="checkline" style="padding:2px 0;">
+                <input type="checkbox" id="perm-${key}" ${perms[key] ? 'checked' : ''}> ${cacambasLabels[key]}
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // Card Serviços
+      const servicosPerms = ['servicos_orcamento', 'servicos_orcamentos_gerados', 'servicos_realizar', 'servicos_concluidos', 'servicos_configuracoes'];
+      const servicosLabels = {
+        servicos_orcamento: 'Novo Orçamento',
+        servicos_orcamentos_gerados: 'Orçamentos Gerados',
+        servicos_realizar: 'Realizar Serviços',
+        servicos_concluidos: 'Serviços Concluídos',
+        servicos_configuracoes: 'Configurações'
+      };
+
+      permissoesHtml += `
+        <div class="card" style="padding:12px;">
+          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
+            <span>🛠</span> Serviços
+          </h4>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            ${servicosPerms.map(key => `
+              <label class="checkline" style="padding:2px 0;">
+                <input type="checkbox" id="perm-${key}" ${perms[key] ? 'checked' : ''}> ${servicosLabels[key]}
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // Card Frota
+      const frotaPerms = ['frota_abastecimento', 'frota_relatorio_abastecimento', 'frota_os', 'frota_historico_os', 'frota_relatorio_os', 'frota_configuracoes'];
+      const frotaLabels = {
+        frota_abastecimento: 'Registro de Abastecimento',
+        frota_relatorio_abastecimento: 'Relatório de Abastecimento',
+        frota_os: 'Ordens de Serviço',
+        frota_historico_os: 'Histórico',
+        frota_relatorio_os: 'Relatórios',
+        frota_configuracoes: 'Configurações'
+      };
+
+      permissoesHtml += `
+        <div class="card" style="padding:12px;">
+          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
+            <span>🚚</span> Frota
+          </h4>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            ${frotaPerms.map(key => `
+              <label class="checkline" style="padding:2px 0;">
+                <input type="checkbox" id="perm-${key}" ${perms[key] ? 'checked' : ''}> ${frotaLabels[key]}
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      // Card Configurações
+      permissoesHtml += `
+        <div class="card" style="padding:12px;">
+          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
+            <span>⚙</span> Configurações
+          </h4>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <label class="checkline" style="padding:2px 0;">
+              <input type="checkbox" id="perm-configuracoes" ${perms.configuracoes ? 'checked' : ''}> Configurações
+            </label>
+          </div>
+        </div>
+      `;
+
+      // Card Usuários / Dependentes (Apenas para compatibilidade, mas dependentes não podem ver dependentes)
+      permissoesHtml += `
+        <div class="card" style="padding:12px;">
+          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
+            <span>👥</span> Acessos
+          </h4>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <label class="checkline" style="padding:2px 0;opacity:0.5;cursor:default;">
+              <input type="checkbox" disabled checked> Acesso ao Sistema
+            </label>
+            <div style="font-size:10px;color:var(--text-muted);padding:4px 0 0 28px;">
+              O dependente tem acesso limitado ao seu banco de dados
+            </div>
+          </div>
+        </div>
+      `;
+
+      permissoesHtml += `</div>`;
+
+      // Montar o modal completo com o mesmo layout do administrador
       openModal(`
-                        <div class="modal-head"><h3>${d ? 'Editar Dependente' : 'Novo Dependente'}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
-                        <div class="modal-body">
-                          <div class="field2"><label>Nome</label><input id="d-nome" value="${d ? esc(d.nome) : ''}"></div>
-                          <div class="field2"><label>E-mail</label><input id="d-email" type="email" value="${d ? esc(d.email) : ''}"></div>
-                          <div class="field2"><label>Senha</label><input id="d-senha" type="text" value="${d ? esc(d.senha) : ''}" placeholder="${d ? 'Deixe para manter a senha atual' : 'Senha de acesso'}"></div>
-                          <div class="field2"><label>Observações (opcional)</label><textarea id="d-obs" rows="2">${d ? esc(d.observacao || '') : ''}</textarea></div>
-                          <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin:16px 0 8px;">Permissões do dependente</label>
-                          <div class="perm-grid">
-                            ${Object.keys(PERM_LABELS).filter(k => k !== 'dependentes' && k !== 'usuarios').map(k => `
-                              <label class="checkline"><input type="checkbox" id="perm-${k}" ${perms[k] ? 'checked' : ''}> ${PERM_LABELS[k]}</label>
-                            `).join('')}
-                          </div>
-                          <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:6px;border:1px solid var(--line);font-size:12px;color:var(--text-muted);">
-                            ⚠️ O dependente compartilhará o mesmo banco de dados que você. Todas as informações cadastradas por ele serão visíveis para você e para os demais dependentes.
-                          </div>
-                        </div>
-                        <div class="modal-foot">
-                          <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-                          <button class="btn btn-primary" onclick="saveDependente(${d ? `'${d.id}'` : 'null'})">Salvar</button>
-                        </div>
-                      `);
+        <div class="modal-head"><h3>${d ? 'Editar Dependente' : 'Novo Dependente'}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">
+          <div class="field2"><label>Nome</label><input id="d-nome" value="${d ? esc(d.nome) : ''}"></div>
+          <div class="field2"><label>E-mail</label><input id="d-email" type="email" value="${d ? esc(d.email) : ''}"></div>
+          <div class="field2"><label>Senha</label><input id="d-senha" type="text" value="${d ? esc(d.senha) : ''}" placeholder="${d ? 'Deixe para manter a senha atual' : 'Senha de acesso'}"></div>
+          <div class="field2"><label>Observações (opcional)</label><textarea id="d-obs" rows="2">${d ? esc(d.observacao || '') : ''}</textarea></div>
+          
+          <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin:16px 0 8px;">Permissões do dependente</label>
+          ${permissoesHtml}
+          
+          <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:6px;border:1px solid var(--line);font-size:12px;color:var(--text-muted);">
+            ⚠️ O dependente compartilhará o mesmo banco de dados que você. Todas as informações cadastradas por ele serão visíveis para você e para os demais dependentes.
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="saveDependente(${d ? `'${d.id}'` : 'null'})">Salvar</button>
+        </div>
+      `);
     }
     window.openDependenteForm = openDependenteForm;
 
     async function saveDependente(id) {
       const user = getLoggedUser();
 
-      // VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
       if (!user || user.role !== 'user') {
         toast('Acesso negado.', true);
         closeModal();
@@ -6411,9 +6699,18 @@
       const senha = document.getElementById('d-senha').value;
       const observacao = document.getElementById('d-obs').value.trim();
 
+      // ===== MESMA LÓGICA DE PERMISSÕES DO ADMINISTRADOR =====
+      const allPermKeys = [
+        'dashboard', 'cadastro', 'colocacao', 'remocao',
+        'geral', 'configuracoes', 'excluidos', 'financeiro',
+        'servicos_orcamento', 'servicos_orcamentos_gerados', 'servicos_realizar', 'servicos_concluidos', 'servicos_configuracoes',
+        'frota_abastecimento', 'frota_relatorio_abastecimento', 'frota_os', 'frota_historico_os', 'frota_relatorio_os', 'frota_configuracoes'
+      ];
+
       const permissoes = {};
-      Object.keys(PERM_LABELS).filter(k => k !== 'dependentes' && k !== 'usuarios').forEach(k => {
-        permissoes[k] = document.getElementById('perm-' + k).checked;
+      allPermKeys.forEach(k => {
+        const el = document.getElementById('perm-' + k);
+        permissoes[k] = el ? el.checked : false;
       });
 
       if (!nome || !email) { toast('Preencha nome e e-mail.', true); return; }
@@ -6428,6 +6725,8 @@
       if (id) {
         const d = dependentes.find(x => x.id === id);
         if (!d) { toast('Dependente não encontrado.', true); return; }
+        // 🔒 VERIFICAÇÃO DE SEGURANÇA
+        if (!hasAccessToItem(d)) { toast('Acesso negado.', true); return; }
         d.nome = nome;
         d.email = email;
         d.permissoes = permissoes;
@@ -6461,7 +6760,7 @@
     async function toggleBloqueioDependente(id) {
       const user = getLoggedUser();
 
-      // VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
       if (!user || user.role !== 'user') {
         toast('Acesso negado.', true);
         return;
@@ -6470,6 +6769,7 @@
       const dependentes = getDependentes();
       const d = dependentes.find(x => x.id === id);
       if (!d) { toast('Dependente não encontrado.', true); return; }
+      if (!hasAccessToItem(d)) { toast('Acesso negado.', true); return; }
 
       d.bloqueado = !d.bloqueado;
       await saveDB(DB);
@@ -6481,7 +6781,7 @@
     async function resetSenhaDependente(id) {
       const user = getLoggedUser();
 
-      // VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
       if (!user || user.role !== 'user') {
         toast('Acesso negado.', true);
         return;
@@ -6490,6 +6790,7 @@
       const dependentes = getDependentes();
       const d = dependentes.find(x => x.id === id);
       if (!d) { toast('Dependente não encontrado.', true); return; }
+      if (!hasAccessToItem(d)) { toast('Acesso negado.', true); return; }
 
       const novaSenha = prompt('Digite a nova senha para o dependente ' + d.nome + ':');
       if (novaSenha === null) return;
@@ -6510,7 +6811,7 @@
 
       const user = getLoggedUser();
 
-      // VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
       if (!user || user.role !== 'user') {
         toast('Acesso negado.', true);
         return;
@@ -6519,6 +6820,7 @@
       const dependentes = getDependentes();
       const d = dependentes.find(x => x.id === id);
       if (!d) { toast('Dependente não encontrado.', true); return; }
+      if (!hasAccessToItem(d)) { toast('Acesso negado.', true); return; }
 
       DB.dependentes = DB.dependentes.filter(x => x.id !== id);
       await saveDB(DB);
@@ -7138,6 +7440,12 @@
       const veiculos = getVeiculos();
       const v = id ? veiculos.find(x => x.id === id) : null;
 
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA
+      if (id && v && !hasAccessToItem(v)) {
+        toast('Acesso negado.', true);
+        return;
+      }
+
       openModal(`
         <div class="modal-head"><h3>${v ? 'Editar Veículo' : 'Novo Veículo'}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
         <div class="modal-body">
@@ -7170,15 +7478,22 @@
       if (id) {
         const v = veiculos.find(x => x.id === id);
         if (!v) { toast('Veículo não encontrado.', true); return; }
+        // 🔒 VERIFICAÇÃO DE SEGURANÇA
+        if (!hasAccessToItem(v)) { toast('Acesso negado.', true); return; }
         v.placa = placa;
         await saveDB(DB);
         toast('Veículo atualizado com sucesso.');
       } else {
-        const novoVeiculo = { id: uid(), placa };
-        addOwnerId(novoVeiculo);
-        DB.veiculos.push(novoVeiculo);
-        await saveDB(DB);
-        toast('Veículo cadastrado com sucesso.');
+        try {
+          const novoVeiculo = { id: uid(), placa };
+          addOwnerId(novoVeiculo);
+          DB.veiculos.push(novoVeiculo);
+          await saveDB(DB);
+          toast('Veículo cadastrado com sucesso.');
+        } catch (e) {
+          toast('Erro ao cadastrar veículo: ' + e.message, true);
+          return;
+        }
       }
 
       closeModal();
@@ -7245,6 +7560,12 @@
       const motoristas = getMotoristasFrota();
       const m = id ? motoristas.find(x => x.id === id) : null;
 
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA
+      if (id && m && !hasAccessToItem(m)) {
+        toast('Acesso negado.', true);
+        return;
+      }
+
       openModal(`
         <div class="modal-head"><h3>${m ? 'Editar Motorista' : 'Novo Motorista'}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
         <div class="modal-body">
@@ -7277,15 +7598,21 @@
       if (id) {
         const m = motoristas.find(x => x.id === id);
         if (!m) { toast('Motorista não encontrado.', true); return; }
+        if (!hasAccessToItem(m)) { toast('Acesso negado.', true); return; }
         m.nome = nome;
         await saveDB(DB);
         toast('Motorista atualizado com sucesso.');
       } else {
-        const novoMotorista = { id: uid(), nome };
-        addOwnerId(novoMotorista);
-        DB.motoristasFrota.push(novoMotorista);
-        await saveDB(DB);
-        toast('Motorista cadastrado com sucesso.');
+        try {
+          const novoMotorista = { id: uid(), nome };
+          addOwnerId(novoMotorista);
+          DB.motoristasFrota.push(novoMotorista);
+          await saveDB(DB);
+          toast('Motorista cadastrado com sucesso.');
+        } catch (e) {
+          toast('Erro ao cadastrar motorista: ' + e.message, true);
+          return;
+        }
       }
 
       closeModal();
@@ -7410,24 +7737,27 @@
       if (isNaN(litros) || litros <= 0) { toast('Informe a quantidade de litros.', true); return; }
       if (isNaN(valorTotal) || valorTotal <= 0) { toast('Informe o valor total pago.', true); return; }
 
-      const novoAbastecimento = {
-        id: uid(),
-        veiculoId,
-        motoristaId,
-        km,
-        litros,
-        valorTotal,
-        posto,
-        formaPagamento,
-        observacoes,
-        dataHora: new Date().toISOString()
-      };
-      addOwnerId(novoAbastecimento);
-      DB.abastecimentos.push(novoAbastecimento);
-      await saveDB(DB);
-
-      toast('Abastecimento registrado com sucesso!');
-      renderFrotaAbastecimento();
+      try {
+        const novoAbastecimento = {
+          id: uid(),
+          veiculoId,
+          motoristaId,
+          km,
+          litros,
+          valorTotal,
+          posto,
+          formaPagamento,
+          observacoes,
+          dataHora: new Date().toISOString()
+        };
+        addOwnerId(novoAbastecimento);
+        DB.abastecimentos.push(novoAbastecimento);
+        await saveDB(DB);
+        toast('Abastecimento registrado com sucesso!');
+        renderFrotaAbastecimento();
+      } catch (e) {
+        toast('Erro ao registrar abastecimento: ' + e.message, true);
+      }
     }
     window.saveAbastecimento = saveAbastecimento;
 
@@ -7435,6 +7765,9 @@
       const abastecimentos = getAbastecimentos();
       const a = abastecimentos.find(x => x.id === id);
       if (!a) { toast('Registro não encontrado.', true); return; }
+
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA
+      if (!hasAccessToItem(a)) { toast('Acesso negado.', true); return; }
 
       const veiculos = getVeiculos();
       const motoristas = getMotoristasFrota();
@@ -7501,6 +7834,9 @@
       const a = abastecimentos.find(x => x.id === id);
       if (!a) { toast('Registro não encontrado.', true); return; }
 
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA
+      if (!hasAccessToItem(a)) { toast('Acesso negado.', true); return; }
+
       const veiculoId = document.getElementById('f-veiculo-abast-edit').value;
       const motoristaId = document.getElementById('f-motorista-abast-edit').value;
       const km = parseFloat(document.getElementById('f-km-abast-edit').value);
@@ -7549,22 +7885,17 @@
     window.deleteAbastecimento = deleteAbastecimento;
 
     /* ============================================================
-       FROTA - RELATÓRIO DE ABASTECIMENTO - CORRIGIDO
-       ============================================================ */
+       FROTA - RELATÓRIO DE ABASTECIMENTO
+    ============================================================ */
 
     function renderFrotaRelatorioAbastecimento() {
-      // Buscar todos os abastecimentos e ordenar do mais recente para o mais antigo
       let abastecimentos = getAbastecimentos();
-
-      // Ordenar por data/hora decrescente (mais recente primeiro)
       abastecimentos.sort((a, b) => (b.dataHora || '').localeCompare(a.dataHora || ''));
 
       const veiculos = getVeiculos();
       const motoristas = getMotoristasFrota();
 
-      // Calcular KM Rodado e Média KM/Litro para cada registro
       const abastecimentosComCalculos = abastecimentos.map((a, index, arr) => {
-        // Encontrar abastecimento anterior do mesmo veículo
         const anteriores = arr.filter(item =>
           item.veiculoId === a.veiculoId &&
           item.dataHora < a.dataHora
@@ -7760,7 +8091,6 @@
 
       abastecimentos.sort((a, b) => (b.dataHora || '').localeCompare(a.dataHora || ''));
 
-      // Calcular KM Rodado e Média KM/Litro para cada registro
       const abastecimentosComCalculos = abastecimentos.map((a, index, arr) => {
         const anteriores = arr.filter(item =>
           item.veiculoId === a.veiculoId &&
@@ -7920,6 +8250,12 @@
       const ordens = getOrdensServico();
       const o = id ? ordens.find(x => x.id === id) : null;
 
+      // 🔒 VERIFICAÇÃO DE SEGURANÇA
+      if (id && o && !hasAccessToItem(o)) {
+        toast('Acesso negado.', true);
+        return;
+      }
+
       const veiculos = getVeiculos();
       const motoristas = getMotoristasFrota();
 
@@ -8017,6 +8353,7 @@
         const ordens = getOrdensServico();
         const o = ordens.find(x => x.id === id);
         if (!o) { toast('OS não encontrada.', true); return; }
+        if (!hasAccessToItem(o)) { toast('Acesso negado.', true); return; }
 
         o.veiculoId = veiculoId;
         o.motoristaId = motoristaId;
@@ -8031,33 +8368,38 @@
         closeModal();
         toast('OS atualizada com sucesso.');
       } else {
-        const ordens = getOrdensServico();
-        const numeroOS = ordens.length + 1;
+        try {
+          const ordens = getOrdensServico();
+          const numeroOS = ordens.length + 1;
 
-        const novaOS = {
-          id: uid(),
-          numeroOS,
-          veiculoId,
-          motoristaId,
-          tipo,
-          prioridade,
-          km,
-          horimetro,
-          descricao,
-          observacoes,
-          status: 'aberta',
-          dataAbertura: now,
-          custoReal: null,
-          mecanico: null,
-          dataConclusao: null,
-          observacaoConclusao: null
-        };
-        addOwnerId(novaOS);
-        DB.ordensServico.push(novaOS);
-        await saveDB(DB);
+          const novaOS = {
+            id: uid(),
+            numeroOS,
+            veiculoId,
+            motoristaId,
+            tipo,
+            prioridade,
+            km,
+            horimetro,
+            descricao,
+            observacoes,
+            status: 'aberta',
+            dataAbertura: now,
+            custoReal: null,
+            mecanico: null,
+            dataConclusao: null,
+            observacaoConclusao: null
+          };
+          addOwnerId(novaOS);
+          DB.ordensServico.push(novaOS);
+          await saveDB(DB);
 
-        closeModal();
-        toast('OS criada com sucesso! Nº #' + numeroOS);
+          closeModal();
+          toast('OS criada com sucesso! Nº #' + numeroOS);
+        } catch (e) {
+          toast('Erro ao criar OS: ' + e.message, true);
+          return;
+        }
       }
 
       boot();
@@ -8088,6 +8430,7 @@
       const ordens = getOrdensServico();
       const o = ordens.find(x => x.id === id);
       if (!o) { toast('OS não encontrada.', true); return; }
+      if (!hasAccessToItem(o)) { toast('Acesso negado.', true); return; }
 
       openModal(`
         <div class="modal-head"><h3>Atualizar OS #${o.numeroOS || o.id.slice(0, 6)}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
@@ -8130,6 +8473,7 @@
       const ordens = getOrdensServico();
       const o = ordens.find(x => x.id === id);
       if (!o) { toast('OS não encontrada.', true); return; }
+      if (!hasAccessToItem(o)) { toast('Acesso negado.', true); return; }
 
       const status = document.getElementById('f-os-status-update').value;
       const custoReal = parseFloat(document.getElementById('f-os-custo').value) || null;
@@ -8642,7 +8986,7 @@
        ============================================================ */
 
     // ============================================================
-    // FUNÇÃO PRINCIPAL - RENDER SERVIÇOS (CORRIGIDA)
+    // FUNÇÃO PRINCIPAL - RENDER SERVIÇOS
     // ============================================================
 
     function renderServicos() {
@@ -8699,7 +9043,7 @@
     }
 
     // ============================================================
-    // FUNÇÃO PARA ALTERNAR ABAS (CORRIGIDA)
+    // FUNÇÃO PARA ALTERNAR ABAS
     // ============================================================
 
     function renderServicosTab(tabId) {
@@ -8821,13 +9165,17 @@
         return;
       }
 
-      const novoItem = { id: uid(), nome: val };
-      addOwnerId(novoItem);
-      DB.servicos_tipos.push(novoItem);
-      await saveDB(DB);
-      toast('Tipo de serviço adicionado com sucesso.');
-      if (servicosSubView === 'configuracoes-servicos') {
-        renderServicosTab('configuracoes-servicos');
+      try {
+        const novoItem = { id: uid(), nome: val };
+        addOwnerId(novoItem);
+        DB.servicos_tipos.push(novoItem);
+        await saveDB(DB);
+        toast('Tipo de serviço adicionado com sucesso.');
+        if (servicosSubView === 'configuracoes-servicos') {
+          renderServicosTab('configuracoes-servicos');
+        }
+      } catch (e) {
+        toast('Erro ao adicionar tipo de serviço: ' + e.message, true);
       }
     }
     window.addTipoServico = addTipoServico;
@@ -9134,45 +9482,48 @@
       if (!data) { toast('Selecione a data do orçamento.', true); document.getElementById('f-orc-data').focus(); return; }
       if (!prazo || parseInt(prazo) <= 0) { toast('Informe um prazo de execução válido.', true); document.getElementById('f-orc-prazo').focus(); return; }
 
-      const orcamento = {
-        id: uid(),
-        numero: document.getElementById('f-orc-numero').value,
-        data: data,
-        cliente: cliente,
-        cpf: document.getElementById('f-orc-cpf').value.trim(),
-        telefone: document.getElementById('f-orc-telefone').value.trim(),
-        // E-mail removido - não será mais salvo
-        endereco: document.getElementById('f-orc-endereco').value.trim(),
-        cidade: document.getElementById('f-orc-cidade').value,
-        bairro: document.getElementById('f-orc-bairro').value.trim(),
-        cep: document.getElementById('f-orc-cep').value.trim(),
-        tipoServico: tipoServico,
-        descricao: document.getElementById('f-orc-descricao').value.trim(),
-        quantidade: parseInt(document.getElementById('f-orc-quantidade').value) || 1,
-        valorUnitario: parseFloat(document.getElementById('f-orc-valor-unitario').value) || 0,
-        valorTotal: valorTotal,
-        observacoes: document.getElementById('f-orc-obs').value.trim(),
-        responsavel: document.getElementById('f-orc-responsavel').value.trim() || '',
-        situacao: document.getElementById('f-orc-situacao').value,
-        prazoExecucao: parseInt(prazo),
-        prazoUnidade: prazoUnidade,
-        createdAt: new Date().toISOString(),
-        createdBy: getLoggedUser()?.nome || 'Sistema',
-        updatedAt: new Date().toISOString(),
-        updatedBy: getLoggedUser()?.nome || 'Sistema'
-      };
+      try {
+        const orcamento = {
+          id: uid(),
+          numero: document.getElementById('f-orc-numero').value,
+          data: data,
+          cliente: cliente,
+          cpf: document.getElementById('f-orc-cpf').value.trim(),
+          telefone: document.getElementById('f-orc-telefone').value.trim(),
+          endereco: document.getElementById('f-orc-endereco').value.trim(),
+          cidade: document.getElementById('f-orc-cidade').value,
+          bairro: document.getElementById('f-orc-bairro').value.trim(),
+          cep: document.getElementById('f-orc-cep').value.trim(),
+          tipoServico: tipoServico,
+          descricao: document.getElementById('f-orc-descricao').value.trim(),
+          quantidade: parseInt(document.getElementById('f-orc-quantidade').value) || 1,
+          valorUnitario: parseFloat(document.getElementById('f-orc-valor-unitario').value) || 0,
+          valorTotal: valorTotal,
+          observacoes: document.getElementById('f-orc-obs').value.trim(),
+          responsavel: document.getElementById('f-orc-responsavel').value.trim() || '',
+          situacao: document.getElementById('f-orc-situacao').value,
+          prazoExecucao: parseInt(prazo),
+          prazoUnidade: prazoUnidade,
+          createdAt: new Date().toISOString(),
+          createdBy: getLoggedUser()?.nome || 'Sistema',
+          updatedAt: new Date().toISOString(),
+          updatedBy: getLoggedUser()?.nome || 'Sistema'
+        };
 
-      addOwnerId(orcamento);
+        addOwnerId(orcamento);
 
-      if (!DB.servicos_orcamentos) DB.servicos_orcamentos = [];
-      DB.servicos_orcamentos.push(orcamento);
-      await saveDB(DB);
+        if (!DB.servicos_orcamentos) DB.servicos_orcamentos = [];
+        DB.servicos_orcamentos.push(orcamento);
+        await saveDB(DB);
 
-      toast(`Orçamento #${orcamento.numero} salvo com sucesso!`);
-      limparFormOrcamento();
+        toast(`Orçamento #${orcamento.numero} salvo com sucesso!`);
+        limparFormOrcamento();
 
-      if (servicosSubView === 'orcamentos-gerados') {
-        renderServicosTab('orcamentos-gerados');
+        if (servicosSubView === 'orcamentos-gerados') {
+          renderServicosTab('orcamentos-gerados');
+        }
+      } catch (e) {
+        toast('Erro ao salvar orçamento: ' + e.message, true);
       }
     }
     window.salvarOrcamento = salvarOrcamento;
@@ -9271,7 +9622,6 @@
         const agendamentos = getAgendamentos();
         const temAgendamento = agendamentos.some(a => a.orcamentoId === o.id && (a.status === 'Agendado' || a.status === 'Em Andamento'));
 
-        // Verificar se pode confirmar execução (não agendado e situação permitida)
         const podeConfirmarExecucao = !temAgendamento && o.situacao !== 'Concluído' && o.situacao !== 'Cancelado' && o.situacao !== 'Rejeitado';
 
         html += `<tr>
@@ -9363,7 +9713,6 @@
       if (!data) { toast('Selecione a data da execução.', true); return; }
       if (!hora) { toast('Selecione a hora da execução.', true); return; }
 
-      // Verificar se data/hora não estão no passado
       const dataHoraExecucao = new Date(data + 'T' + (hora || '00:00'));
       const agora = new Date();
       if (dataHoraExecucao < agora) {
@@ -9371,49 +9720,45 @@
         return;
       }
 
-      // Criar agendamento
-      const agendamento = {
-        id: uid(),
-        orcamentoId: o.id,
-        numeroOrcamento: o.numero,
-        cliente: o.cliente,
-        tipoServico: o.tipoServico,
-        cidade: o.cidade || '',
-        dataAgendamento: data,
-        horaAgendamento: hora,
-        responsavel: o.responsavel || '',
-        equipe: '',
-        observacoes: observacoes,
-        status: 'Agendado',
-        agendadoPor: getLoggedUser()?.nome || 'Sistema',
-        dataAgendamentoCriacao: new Date().toISOString(),
-        // Informações adicionais para rastreamento
-        origem: 'confirmacao_execucao'
-      };
-      addOwnerId(agendamento);
+      try {
+        const agendamento = {
+          id: uid(),
+          orcamentoId: o.id,
+          numeroOrcamento: o.numero,
+          cliente: o.cliente,
+          tipoServico: o.tipoServico,
+          cidade: o.cidade || '',
+          dataAgendamento: data,
+          horaAgendamento: hora,
+          responsavel: o.responsavel || '',
+          equipe: '',
+          observacoes: observacoes,
+          status: 'Agendado',
+          agendadoPor: getLoggedUser()?.nome || 'Sistema',
+          dataAgendamentoCriacao: new Date().toISOString(),
+          origem: 'confirmacao_execucao'
+        };
+        addOwnerId(agendamento);
 
-      if (!DB.servicos_agendados) DB.servicos_agendados = [];
-      DB.servicos_agendados.push(agendamento);
+        if (!DB.servicos_agendados) DB.servicos_agendados = [];
+        DB.servicos_agendados.push(agendamento);
 
-      // Atualizar situação do orçamento para Agendado e remover da lista de orçamentos gerados
-      const orcIndex = DB.servicos_orcamentos.findIndex(item => item.id === o.id);
-      if (orcIndex !== -1) {
-        // Mover para a lista de orçamentos concluídos/agendados? 
-        // Na verdade, conforme solicitado: "remover automaticamente este orçamento da tela Orçamentos Gerados"
-        // e "enviar automaticamente este orçamento para a tela Realizar Serviço"
-        // O orçamento vai para a lista de agendamentos, e é removido da lista de orçamentos gerados
-        DB.servicos_orcamentos.splice(orcIndex, 1);
-      }
+        const orcIndex = DB.servicos_orcamentos.findIndex(item => item.id === o.id);
+        if (orcIndex !== -1) {
+          DB.servicos_orcamentos.splice(orcIndex, 1);
+        }
 
-      await saveDB(DB);
-      closeModal();
-      toast(`✅ Serviço agendado para ${fmtDate(data)} às ${hora}. Movido para "Realizar Serviço".`);
+        await saveDB(DB);
+        closeModal();
+        toast(`✅ Serviço agendado para ${fmtDate(data)} às ${hora}. Movido para "Realizar Serviço".`);
 
-      // Atualizar contador do menu
-      atualizarContadorServicos();
+        atualizarContadorServicos();
 
-      if (servicosSubView === 'orcamentos-gerados') {
-        renderServicosTab('orcamentos-gerados');
+        if (servicosSubView === 'orcamentos-gerados') {
+          renderServicosTab('orcamentos-gerados');
+        }
+      } catch (e) {
+        toast('Erro ao confirmar execução: ' + e.message, true);
       }
     }
     window.confirmarExecucaoServico = confirmarExecucaoServico;
@@ -9426,10 +9771,8 @@
       const agendados = getAgendamentos().filter(a => a.status === 'Agendado' || a.status === 'Em Andamento');
       const count = agendados.length;
 
-      // Atualizar todos os badges do menu "Realizar Serviços"
       const menuItems = document.querySelectorAll('.nav-item[data-view="servicos_realizar"]');
       menuItems.forEach(item => {
-        // Remover badge existente
         const existingBadge = item.querySelector('.servico-counter');
         if (existingBadge) existingBadge.remove();
 
@@ -9441,7 +9784,6 @@
         }
       });
 
-      // Atualizar também no submenu
       const subItems = document.querySelectorAll('.submenu .nav-item[data-view="servicos_realizar"]');
       subItems.forEach(item => {
         const existingBadge = item.querySelector('.servico-counter');
@@ -9482,7 +9824,6 @@
                 <div><span style="color:var(--text-muted);">Situação:</span> <strong><span class="badge ${situacaoClass}">${esc(o.situacao || 'Pendente')}</span></strong></div>
                 <div style="grid-column:1/-1;"><span style="color:var(--text-muted);">Cliente:</span> <strong>${esc(o.cliente)}</strong></div>
                 <div><span style="color:var(--text-muted);">Telefone:</span> <strong>${esc(o.telefone || '—')}</strong></div>
-                <div><span style="color:var(--text-muted);">E-mail:</span> <strong>${esc(o.email || '—')}</strong></div>
                 <div style="grid-column:1/-1;"><span style="color:var(--text-muted);">Endereço:</span> <strong>${esc(o.endereco || '—')}</strong></div>
                 <div><span style="color:var(--text-muted);">Cidade:</span> <strong>${esc(o.cidade || '—')}</strong></div>
                 <div><span style="color:var(--text-muted);">Bairro:</span> <strong>${esc(o.bairro || '—')}</strong></div>
@@ -9525,7 +9866,6 @@
         document.getElementById('f-orc-cliente').value = o.cliente;
         document.getElementById('f-orc-cpf').value = o.cpf || '';
         document.getElementById('f-orc-telefone').value = o.telefone || '';
-        // E-mail removido - não será mais preenchido
         document.getElementById('f-orc-endereco').value = o.endereco || '';
         document.getElementById('f-orc-cidade').value = o.cidade || '';
         document.getElementById('f-orc-bairro').value = o.bairro || '';
@@ -9594,7 +9934,6 @@
       o.cliente = cliente;
       o.cpf = document.getElementById('f-orc-cpf').value.trim();
       o.telefone = document.getElementById('f-orc-telefone').value.trim();
-      // E-mail removido - não será mais atualizado
       o.endereco = document.getElementById('f-orc-endereco').value.trim();
       o.cidade = document.getElementById('f-orc-cidade').value;
       o.bairro = document.getElementById('f-orc-bairro').value.trim();
@@ -9667,7 +10006,6 @@
                 <div><strong>Cliente:</strong> ${esc(o.cliente)}</div>
                 <div><strong>CPF/CNPJ:</strong> ${esc(o.cpf || '—')}</div>
                 <div><strong>Telefone:</strong> ${esc(o.telefone || '—')}</div>
-                <div><strong>E-mail:</strong> ${esc(o.email || '—')}</div>
                 <div><strong>Endereço:</strong> ${esc(o.endereco || '—')}</div>
                 <div><strong>Cidade:</strong> ${esc(o.cidade || '—')}</div>
                 <div><strong>Bairro:</strong> ${esc(o.bairro || '—')}</div>
@@ -9731,7 +10069,6 @@
             <div><strong>Cliente:</strong> ${esc(o.cliente)}</div>
             <div><strong>CPF/CNPJ:</strong> ${esc(o.cpf || '—')}</div>
             <div><strong>Telefone:</strong> ${esc(o.telefone || '—')}</div>
-            <div><strong>E-mail:</strong> ${esc(o.email || '—')}</div>
             <div><strong>Endereço:</strong> ${esc(o.endereco || '—')}</div>
             <div><strong>Cidade:</strong> ${esc(o.cidade || '—')}</div>
             <div><strong>Bairro:</strong> ${esc(o.bairro || '—')}</div>
@@ -9793,7 +10130,6 @@
         isoDateOnly(a.dataAgendamento) === hoje
       );
 
-      // Atualizar contador do menu
       atualizarContadorServicos();
 
       const html = `
@@ -9932,7 +10268,6 @@
       if (!novaData) { toast('Selecione a nova data.', true); return; }
       if (!novaHora) { toast('Selecione o novo horário.', true); return; }
 
-      // Verificar se data/hora não estão no passado
       const dataHoraNova = new Date(novaData + 'T' + (novaHora || '00:00'));
       const agora = new Date();
       if (dataHoraNova < agora) {
@@ -9940,16 +10275,13 @@
         return;
       }
 
-      // Salvar dados antigos para histórico
       const dataAntiga = a.dataAgendamento;
       const horaAntiga = a.horaAgendamento;
 
-      // Atualizar agendamento
       a.dataAgendamento = novaData;
       a.horaAgendamento = novaHora;
       a.dataAgendamentoCriacao = new Date().toISOString();
 
-      // Registrar histórico de reagendamento
       if (!a.historicoReagendamentos) a.historicoReagendamentos = [];
       a.historicoReagendamentos.push({
         data: new Date().toISOString(),
@@ -9965,7 +10297,6 @@
       closeModal();
       toast(`🔄 Serviço reagendado para ${fmtDate(novaData)} às ${novaHora}`);
 
-      // Atualizar contador
       atualizarContadorServicos();
 
       if (servicosSubView === 'realizar-servicos') {
@@ -10105,10 +10436,8 @@
       if (!DB.servicos_concluidos) DB.servicos_concluidos = [];
       DB.servicos_concluidos.push(conclusao);
 
-      // Remover da lista de agendados
       DB.servicos_agendados = DB.servicos_agendados.filter(x => x.id !== id);
 
-      // Remover orçamento da lista de orçamentos gerados se existir
       if (a.orcamentoId) {
         DB.servicos_orcamentos = DB.servicos_orcamentos.filter(o => o.id !== a.orcamentoId);
       }
@@ -10117,7 +10446,6 @@
       closeModal();
       toast(`✅ Serviço concluído com sucesso! Tempo total: ${tempoDecorrido}`);
 
-      // Atualizar contador
       atualizarContadorServicos();
 
       if (servicosSubView === 'realizar-servicos') {
@@ -10205,39 +10533,41 @@
         return;
       }
 
-      const agendamento = {
-        id: uid(),
-        orcamentoId: o.id,
-        numeroOrcamento: o.numero,
-        cliente: o.cliente,
-        tipoServico: o.tipoServico,
-        cidade: o.cidade || '',
-        dataAgendamento: data,
-        horaAgendamento: hora,
-        responsavel: responsavel || o.responsavel || '',
-        equipe: equipe,
-        observacoes: observacoes,
-        status: 'Agendado',
-        agendadoPor: getLoggedUser()?.nome || 'Sistema',
-        dataAgendamentoCriacao: new Date().toISOString()
-      };
-      addOwnerId(agendamento);
+      try {
+        const agendamento = {
+          id: uid(),
+          orcamentoId: o.id,
+          numeroOrcamento: o.numero,
+          cliente: o.cliente,
+          tipoServico: o.tipoServico,
+          cidade: o.cidade || '',
+          dataAgendamento: data,
+          horaAgendamento: hora,
+          responsavel: responsavel || o.responsavel || '',
+          equipe: equipe,
+          observacoes: observacoes,
+          status: 'Agendado',
+          agendadoPor: getLoggedUser()?.nome || 'Sistema',
+          dataAgendamentoCriacao: new Date().toISOString()
+        };
+        addOwnerId(agendamento);
 
-      if (!DB.servicos_agendados) DB.servicos_agendados = [];
-      DB.servicos_agendados.push(agendamento);
+        if (!DB.servicos_agendados) DB.servicos_agendados = [];
+        DB.servicos_agendados.push(agendamento);
 
-      // Remover orçamento da lista de orçamentos gerados
-      DB.servicos_orcamentos = DB.servicos_orcamentos.filter(item => item.id !== o.id);
+        DB.servicos_orcamentos = DB.servicos_orcamentos.filter(item => item.id !== o.id);
 
-      await saveDB(DB);
-      closeModal();
-      toast(`✅ Serviço agendado para ${fmtDate(data)} às ${hora}`);
+        await saveDB(DB);
+        closeModal();
+        toast(`✅ Serviço agendado para ${fmtDate(data)} às ${hora}`);
 
-      // Atualizar contador
-      atualizarContadorServicos();
+        atualizarContadorServicos();
 
-      if (servicosSubView === 'orcamentos-gerados' || servicosSubView === 'realizar-servicos') {
-        renderServicosTab('realizar-servicos');
+        if (servicosSubView === 'orcamentos-gerados' || servicosSubView === 'realizar-servicos') {
+          renderServicosTab('realizar-servicos');
+        }
+      } catch (e) {
+        toast('Erro ao confirmar agendamento: ' + e.message, true);
       }
     }
     window.confirmarAgendamentoServico = confirmarAgendamentoServico;
@@ -10689,39 +11019,42 @@
     }
 
     async function salvarConfiguracoesServicos() {
-      const configs = {
-        horarioAviso: document.getElementById('f-config-horario').value || '00:10',
-        antecedencia: document.getElementById('f-config-antecedencia').value || 'no_dia',
-        notificacoesAtivas: servicosConfiguracoes?.notificacoesAtivas !== undefined ? servicosConfiguracoes.notificacoesAtivas : true,
-        somNotificacao: servicosConfiguracoes?.somNotificacao !== undefined ? servicosConfiguracoes.somNotificacao : true,
-        notificacaoVisual: servicosConfiguracoes?.notificacaoVisual !== undefined ? servicosConfiguracoes.notificacaoVisual : true,
-        responsavelPadrao: servicosConfiguracoes?.responsavelPadrao || '',
-        tempoMaximoServico: servicosConfiguracoes?.tempoMaximoServico || 8,
-        numeracaoAutomatica: document.getElementById('f-config-numeracao').checked,
-        prefixoOrcamento: document.getElementById('f-config-prefixo').value.trim() || 'ORC-'
-      };
+      try {
+        const configs = {
+          horarioAviso: document.getElementById('f-config-horario').value || '00:10',
+          antecedencia: document.getElementById('f-config-antecedencia').value || 'no_dia',
+          notificacoesAtivas: servicosConfiguracoes?.notificacoesAtivas !== undefined ? servicosConfiguracoes.notificacoesAtivas : true,
+          somNotificacao: servicosConfiguracoes?.somNotificacao !== undefined ? servicosConfiguracoes.somNotificacao : true,
+          notificacaoVisual: servicosConfiguracoes?.notificacaoVisual !== undefined ? servicosConfiguracoes.notificacaoVisual : true,
+          responsavelPadrao: servicosConfiguracoes?.responsavelPadrao || '',
+          tempoMaximoServico: servicosConfiguracoes?.tempoMaximoServico || 8,
+          numeracaoAutomatica: document.getElementById('f-config-numeracao').checked,
+          prefixoOrcamento: document.getElementById('f-config-prefixo').value.trim() || 'ORC-'
+        };
 
-      if (!DB.servicos_configuracoes) DB.servicos_configuracoes = [];
+        if (!DB.servicos_configuracoes) DB.servicos_configuracoes = [];
 
-      const existing = DB.servicos_configuracoes.find(c => c.ownerId === getCurrentOwnerId());
-      if (existing) {
-        Object.assign(existing, configs);
-      } else {
-        const newConfig = { id: uid(), ...configs, ownerId: getCurrentOwnerId() };
-        DB.servicos_configuracoes.push(newConfig);
+        const existing = DB.servicos_configuracoes.find(c => c.ownerId === getCurrentOwnerId());
+        if (existing) {
+          Object.assign(existing, configs);
+        } else {
+          const newConfig = { id: uid(), ...configs, ownerId: getCurrentOwnerId() };
+          DB.servicos_configuracoes.push(newConfig);
+        }
+
+        await saveDB(DB);
+        servicosConfiguracoes = configs;
+        toast('Configurações salvas com sucesso!');
+      } catch (e) {
+        toast('Erro ao salvar configurações: ' + e.message, true);
       }
-
-      await saveDB(DB);
-      servicosConfiguracoes = configs;
-      toast('Configurações salvas com sucesso!');
     }
     window.salvarConfiguracoesServicos = salvarConfiguracoesServicos;
 
     // ============================================================
-    // SISTEMA DE NOTIFICAÇÕES AUTOMÁTICAS (CORRIGIDO - APENAS NO DIA/HORA)
+    // SISTEMA DE NOTIFICAÇÕES AUTOMÁTICAS
     // ============================================================
 
-    // Armazenar notificações já disparadas para evitar duplicidade
     let notificacoesDisparadas = new Set();
 
     function verificarServicosDoDia() {
@@ -10732,31 +11065,24 @@
 
       const agendamentos = getAgendamentos();
 
-      // Filtrar serviços agendados para hoje
       const servicosHoje = agendamentos.filter(a =>
         a.status === 'Agendado' &&
         a.dataAgendamento &&
         isoDateOnly(a.dataAgendamento) === hoje
       );
 
-      // Remover notificações antigas
       const notificacaoExistente = document.querySelector('.servicos-notificacao');
       if (notificacaoExistente) notificacaoExistente.remove();
 
-      // Verificar cada serviço agendado para hoje
       let notificarHoje = false;
       let mensagem = '';
 
       for (const servico of servicosHoje) {
         if (servico.horaAgendamento) {
           const [horaServico, minutoServico] = servico.horaAgendamento.split(':').map(Number);
-
-          // Calcular diferença em minutos
           const diffMinutos = (horaServico * 60 + minutoServico) - (horaAtual * 60 + minutoAtual);
 
-          // Verificar se está no horário programado (dentro de 2 minutos de tolerância)
           if (diffMinutos >= -2 && diffMinutos <= 2) {
-            // Verificar se já não foi disparada para este serviço
             const chaveNotificacao = `${servico.id}_${hoje}_${servico.horaAgendamento}`;
             if (!notificacoesDisparadas.has(chaveNotificacao)) {
               notificarHoje = true;
@@ -10768,19 +11094,11 @@
         }
       }
 
-      // Se não houver notificações no horário exato, verificar se há serviços pendentes para hoje
-      if (!notificarHoje && servicosHoje.length > 0) {
-        // Não mostrar notificação antecipada - apenas se for no horário exato
-        // A notificação só será exibida no horário programado
-      }
-
-      // Se tiver notificação para disparar no horário exato
       if (notificarHoje) {
         const configs = servicosConfiguracoes || {};
         const shouldNotify = configs.notificacoesAtivas !== false;
 
         if (shouldNotify) {
-          // Tocar som
           if (configs.somNotificacao !== false) {
             try {
               const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -10810,7 +11128,6 @@
             }
           }
 
-          // Exibir notificação
           const notificacao = document.createElement('div');
           notificacao.className = 'servicos-notificacao';
           notificacao.style.cssText = `
@@ -10849,7 +11166,6 @@
 
           document.body.appendChild(notificacao);
 
-          // Remover notificação após 30 segundos
           setTimeout(() => {
             const notif = document.querySelector('.servicos-notificacao');
             if (notif) {
@@ -10861,10 +11177,8 @@
         }
       }
 
-      // Atualizar contador do menu sempre que verificar
       atualizarContadorServicos();
 
-      // Limpar notificações antigas (para evitar acúmulo)
       const chavesAntigas = Array.from(notificacoesDisparadas).filter(key => {
         const hoje2 = todayStr();
         return !key.includes(hoje2);
@@ -10873,13 +11187,9 @@
     }
 
     function iniciarVerificacaoAutomatica() {
-      // Verificar imediatamente ao iniciar
       setTimeout(verificarServicosDoDia, 2000);
-
-      // Verificar a cada 30 segundos para maior precisão
       setInterval(verificarServicosDoDia, 30000);
 
-      // Agendar verificação no horário configurado
       function agendarVerificacaoNoHorario() {
         const agora = new Date();
         const configs = servicosConfiguracoes || { horarioAviso: '00:10' };
@@ -10916,25 +11226,67 @@
       if (!DB.servicos_tipos) DB.servicos_tipos = [];
 
       await getServicosConfiguracoes();
-
-      // Atualizar contador inicial
       atualizarContadorServicos();
-
-      // Iniciar verificação automática
       iniciarVerificacaoAutomatica();
 
       console.log('✅ Módulo Serviços inicializado');
     }
 
+    // ============================================================
+    // FUNÇÕES DE FILTRO PARA ORÇAMENTOS
+    // ============================================================
+
+    function filtrarOrcamentos() {
+      const dataInicio = document.getElementById('fl-orc-data-inicio')?.value || '';
+      const dataFim = document.getElementById('fl-orc-data-fim')?.value || '';
+      const cidade = document.getElementById('fl-orc-cidade')?.value || '';
+      const cliente = document.getElementById('fl-orc-cliente')?.value?.toLowerCase() || '';
+      const situacao = document.getElementById('fl-orc-situacao')?.value || '';
+
+      let orcamentos = getOrcamentos();
+
+      if (dataInicio) {
+        orcamentos = orcamentos.filter(o => o.data && o.data >= dataInicio);
+      }
+      if (dataFim) {
+        orcamentos = orcamentos.filter(o => o.data && o.data <= dataFim);
+      }
+      if (cidade) {
+        const cidadeNorm = normalizarTexto(cidade);
+        orcamentos = orcamentos.filter(o => normalizarTexto(o.cidade || '') === cidadeNorm);
+      }
+      if (cliente) {
+        const clienteNorm = normalizarTexto(cliente);
+        orcamentos = orcamentos.filter(o => normalizarTexto(o.cliente).includes(clienteNorm));
+      }
+      if (situacao) {
+        orcamentos = orcamentos.filter(o => o.situacao === situacao);
+      }
+
+      orcamentos.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+      const container = document.getElementById('orcamentos-table-container');
+      if (container) container.innerHTML = renderOrcamentosTable(orcamentos);
+    }
+    window.filtrarOrcamentos = filtrarOrcamentos;
+
+    function limparFiltrosOrcamentos() {
+      const fields = ['fl-orc-data-inicio', 'fl-orc-data-fim', 'fl-orc-cidade', 'fl-orc-cliente', 'fl-orc-situacao'];
+      fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      filtrarOrcamentos();
+    }
+    window.limparFiltrosOrcamentos = limparFiltrosOrcamentos;
+
     /* ============================================================
        INIT
     ============================================================ */
 
-    // Aguarda o carregamento do banco de dados antes de iniciar
     async function init() {
       await aguardarCarregamentoDB();
 
-      // Inicializar módulo Serviços
       await initServicos();
 
       if (session) {
