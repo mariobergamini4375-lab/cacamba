@@ -933,7 +933,7 @@
       flex-direction: column;
     }
 
-    /* SIDEBAR */
+    /* ===== SIDEBAR - DRAWER MODERNO (MOBILE) ===== */
     .sidebar {
       width: 100%;
       max-height: 60px;
@@ -1152,12 +1152,208 @@
       color: var(--orange);
     }
 
+    /* ===== DRAWER OVERLAY (FUNDO ESCURO) ===== */
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 40;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+
+    .drawer-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* ===== SIDEBAR EM MODO DRAWER (MOBILE) ===== */
+    @media (max-width: 767px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 80%;
+        max-width: 340px;
+        height: 100vh;
+        max-height: 100vh;
+        overflow-y: auto;
+        z-index: 45;
+        transform: translateX(-100%);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        border-radius: 0;
+        border-right: 1px solid rgba(255, 255, 255, .06);
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+        padding: 0;
+        flex-direction: column;
+        align-items: stretch;
+        display: flex;
+        background: var(--sidebar-bg);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        max-height: 100vh;
+        overflow-y: auto;
+      }
+
+      .sidebar-brand {
+        padding: 16px 18px;
+        border-bottom: 1px solid rgba(255, 255, 255, .08);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .sidebar-brand .login-logo span {
+        font-size: 18px;
+      }
+
+      .sidebar-brand .login-logo .box {
+        width: 32px;
+        height: 24px;
+      }
+
+      .sidebar-brand .login-logo .box::before {
+        top: -8px;
+        left: -3px;
+        right: -3px;
+        height: 3px;
+      }
+
+      .sidebar-toggle {
+        display: block;
+        font-size: 26px;
+        padding: 4px;
+        margin-left: 0;
+        color: #D8D6CE;
+      }
+
+      .sidebar-nav {
+        display: block !important;
+        padding: 12px 12px 20px;
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .sidebar-foot {
+        display: block !important;
+        padding: 12px 18px;
+        border-top: 1px solid rgba(255, 255, 255, .08);
+        flex-shrink: 0;
+      }
+
+      .submenu {
+        padding-left: 4px;
+        margin-left: 4px;
+      }
+
+      .submenu .nav-item {
+        padding: 10px 14px 10px 24px;
+        font-size: 13px;
+      }
+
+      /* Ajuste para o conteúdo principal quando o drawer está aberto */
+      .main {
+        transition: opacity 0.2s ease;
+      }
+
+      .sidebar.open~.main .content {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+    }
+
+    /* ===== SIDEBAR EM MODO DESKTOP ===== */
+    @media (min-width: 768px) {
+      .sidebar {
+        width: 236px;
+        max-height: 100vh;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        border-bottom: none;
+        border-right: 1px solid rgba(255, 255, 255, .06);
+        transform: none !important;
+        z-index: auto;
+        box-shadow: none;
+        background: var(--sidebar-bg);
+        display: flex;
+        border-radius: 0;
+      }
+
+      .drawer-overlay {
+        display: none !important;
+      }
+
+      .sidebar-brand {
+        padding: 22px 20px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, .08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .sidebar-brand .login-logo span {
+        font-size: 17px;
+      }
+
+      .sidebar-brand .login-logo .box {
+        width: 34px;
+        height: 26px;
+      }
+
+      .sidebar-brand .login-logo .box::before {
+        top: -9px;
+        left: -4px;
+        right: -4px;
+        height: 3px;
+      }
+
+      .sidebar-toggle {
+        display: none;
+      }
+
+      .sidebar-nav {
+        display: block !important;
+        padding: 14px 10px;
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .sidebar-foot {
+        display: block !important;
+        padding: 14px 16px;
+        border-top: 1px solid rgba(255, 255, 255, .08);
+      }
+
+      .submenu {
+        padding-left: 12px;
+        margin-left: 12px;
+      }
+
+      .submenu .nav-item {
+        padding: 10px 14px 10px 32px;
+        font-size: 13px;
+      }
+    }
+
     /* MAIN */
     .main {
       flex: 1;
       display: flex;
       flex-direction: column;
       min-width: 0;
+      position: relative;
+      z-index: 1;
     }
 
     .topbar {
@@ -2112,72 +2308,6 @@
         flex-direction: row;
       }
 
-      .sidebar {
-        width: 236px;
-        max-height: 100vh;
-        flex-direction: column;
-        align-items: stretch;
-        padding: 0;
-        position: sticky;
-        top: 0;
-        height: 100vh;
-        overflow-y: auto;
-        border-bottom: none;
-        border-right: 1px solid rgba(255, 255, 255, .06);
-      }
-
-      .sidebar.open {
-        max-height: 100vh;
-      }
-
-      .sidebar-brand {
-        padding: 22px 20px 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, .08);
-      }
-
-      .sidebar-brand .login-logo span {
-        font-size: 17px;
-      }
-
-      .sidebar-brand .login-logo .box {
-        width: 34px;
-        height: 26px;
-      }
-
-      .sidebar-brand .login-logo .box::before {
-        top: -9px;
-        left: -4px;
-        right: -4px;
-        height: 3px;
-      }
-
-      .sidebar-toggle {
-        display: none;
-      }
-
-      .sidebar-nav {
-        display: block !important;
-        padding: 14px 10px;
-        flex: 1;
-        overflow-y: auto;
-      }
-
-      .sidebar-foot {
-        display: block !important;
-        padding: 14px 16px;
-        border-top: 1px solid rgba(255, 255, 255, .08);
-      }
-
-      .submenu {
-        padding-left: 12px;
-        margin-left: 12px;
-      }
-
-      .submenu .nav-item {
-        padding: 10px 14px 10px 32px;
-        font-size: 13px;
-      }
-
       .topbar {
         padding: 14px 26px;
       }
@@ -2560,6 +2690,9 @@
 
   <!-- ================= APP ================= -->
   <div id="app-screen">
+    <!-- Overlay para o drawer (mobile) -->
+    <div class="drawer-overlay" id="drawer-overlay"></div>
+
     <div class="layout">
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
@@ -3656,6 +3789,69 @@
     };
 
     /* ============================================================
+       FUNÇÕES DE CONTROLE DO DRAWER (MOBILE)
+    ============================================================ */
+
+    function openDrawer() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('drawer-overlay');
+      sidebar.classList.add('open');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDrawer() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('drawer-overlay');
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function toggleDrawer() {
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar.classList.contains('open')) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
+    }
+
+    // Event listener para o botão hambúrguer
+    document.getElementById('sidebar-toggle').addEventListener('click', function (e) {
+      e.stopPropagation();
+      toggleDrawer();
+    });
+
+    // Fechar drawer ao clicar no overlay
+    document.getElementById('drawer-overlay').addEventListener('click', function (e) {
+      closeDrawer();
+    });
+
+    // Fechar drawer ao clicar em um item do menu (mobile)
+    document.addEventListener('click', function (e) {
+      const navItem = e.target.closest('.nav-item[data-view]');
+      if (navItem && window.innerWidth < 768) {
+        closeDrawer();
+      }
+    });
+
+    // Fechar drawer ao redimensionar para desktop
+    window.addEventListener('resize', function () {
+      if (window.innerWidth >= 768) {
+        closeDrawer();
+        document.getElementById('drawer-overlay').classList.remove('active');
+      }
+    });
+
+    // Fechar drawer ao pressionar ESC
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && window.innerWidth < 768) {
+        closeDrawer();
+      }
+    });
+
+    /* ============================================================
        LOGIN / LOGOUT
     ============================================================ */
 
@@ -3771,27 +3967,6 @@
     setInterval(tickClock, 1000);
 
     /* ============================================================
-       SIDEBAR TOGGLE (MOBILE)
-    ============================================================ */
-
-    document.getElementById('sidebar-toggle').addEventListener('click', function () {
-      document.getElementById('sidebar').classList.toggle('open');
-    });
-    document.addEventListener('click', function (e) {
-      const sidebar = document.getElementById('sidebar');
-      const toggle = document.getElementById('sidebar-toggle');
-      if (window.innerWidth < 768) {
-        if (sidebar.classList.contains('open')) {
-          if (!sidebar.contains(e.target) || e.target === toggle || toggle.contains(e.target)) {
-            // não faz nada
-          } else {
-            sidebar.classList.remove('open');
-          }
-        }
-      }
-    });
-
-    /* ============================================================
        BOTÃO VOLTAR AO TOPO
     ============================================================ */
 
@@ -3897,12 +4072,10 @@
       renderSidebar(user);
       renderView();
 
-      // [NOVA LÓGICA - INÍCIO]
-      // Em dispositivos móveis, a sidebar deve iniciar aberta.
+      // Garantir que o drawer esteja fechado ao carregar a página em mobile
       if (window.innerWidth < 768) {
-        document.getElementById('sidebar').classList.add('open');
+        closeDrawer();
       }
-      // [NOVA LÓGICA - FIM]
 
       // Inicializar módulo Serviços
       await initServicos();
@@ -4227,8 +4400,9 @@
           }
 
           currentView = view;
+          // Fechar o drawer ao selecionar um item no mobile
           if (window.innerWidth < 768) {
-            document.getElementById('sidebar').classList.remove('open');
+            closeDrawer();
           }
           boot();
         });
