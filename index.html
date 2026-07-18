@@ -3897,6 +3897,13 @@
       renderSidebar(user);
       renderView();
 
+      // [NOVA LÓGICA - INÍCIO]
+      // Em dispositivos móveis, a sidebar deve iniciar aberta.
+      if (window.innerWidth < 768) {
+        document.getElementById('sidebar').classList.add('open');
+      }
+      // [NOVA LÓGICA - FIM]
+
       // Inicializar módulo Serviços
       await initServicos();
     }
