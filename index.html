@@ -2550,8 +2550,15 @@
             </button>
           </form>
 
-          <div class="login-hint">
-            Acesso restrito. Fale com o administrador para obter um login.
+          <!-- ===== BOTÃO CRIAR CADASTRO ===== -->
+          <div class="login-hint" style="margin-top:16px;">
+            <button id="btn-criar-cadastro" class="btn"
+              style="width:100%;padding:12px;border:2px solid var(--orange);color:var(--orange);font-weight:600;border-radius:10px;background:transparent;margin-bottom:8px;">
+              ✏️ Criar Cadastro
+            </button>
+            <div style="font-size:12px;color:#6D6F76;">
+              Acesso restrito. Fale com o administrador para obter um login.
+            </div>
           </div>
         </div>
       </div>
@@ -2603,6 +2610,139 @@
     <div class="modal" id="modal"></div>
   </div>
   <div class="toast" id="toast"></div>
+
+  <!-- ============================================================ -->
+  <!-- ===== NOVOS MODAIS PARA CADASTRO E CONTROLE DE ACESSO ===== -->
+  <!-- ============================================================ -->
+
+  <!-- Modal de Cadastro -->
+  <div class="overlay" id="overlay-cadastro">
+    <div class="modal" id="modal-cadastro" style="max-width:520px;">
+      <div class="modal-head">
+        <h3>📝 Criar Nova Conta</h3>
+        <button class="modal-close" onclick="fecharCadastro()">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-cadastro">
+          <div class="field2">
+            <label>Nome Completo *</label>
+            <input type="text" id="cad-nome" placeholder="Digite seu nome completo" required>
+          </div>
+          <div class="field2">
+            <label>E-mail *</label>
+            <input type="email" id="cad-email" placeholder="seuemail@exemplo.com" required>
+          </div>
+          <div class="f-row">
+            <div class="field2">
+              <label>Senha *</label>
+              <input type="password" id="cad-senha" placeholder="••••••••" required minlength="6">
+            </div>
+            <div class="field2">
+              <label>Confirmar Senha *</label>
+              <input type="password" id="cad-confirmar-senha" placeholder="••••••••" required minlength="6">
+            </div>
+          </div>
+          <div class="field2">
+            <label>Telefone</label>
+            <input type="text" id="cad-telefone" placeholder="(00) 00000-0000">
+          </div>
+          <div class="f-row">
+            <div class="field2">
+              <label>Cidade</label>
+              <input type="text" id="cad-cidade" placeholder="Sua cidade">
+            </div>
+            <div class="field2">
+              <label>Estado</label>
+              <select id="cad-estado">
+                <option value="">Selecione</option>
+                <option value="AC">Acre</option>
+                <option value="AL">Alagoas</option>
+                <option value="AP">Amapá</option>
+                <option value="AM">Amazonas</option>
+                <option value="BA">Bahia</option>
+                <option value="CE">Ceará</option>
+                <option value="DF">Distrito Federal</option>
+                <option value="ES">Espírito Santo</option>
+                <option value="GO">Goiás</option>
+                <option value="MA">Maranhão</option>
+                <option value="MT">Mato Grosso</option>
+                <option value="MS">Mato Grosso do Sul</option>
+                <option value="MG">Minas Gerais</option>
+                <option value="PA">Pará</option>
+                <option value="PB">Paraíba</option>
+                <option value="PR">Paraná</option>
+                <option value="PE">Pernambuco</option>
+                <option value="PI">Piauí</option>
+                <option value="RJ">Rio de Janeiro</option>
+                <option value="RN">Rio Grande do Norte</option>
+                <option value="RS">Rio Grande do Sul</option>
+                <option value="RO">Rondônia</option>
+                <option value="RR">Roraima</option>
+                <option value="SC">Santa Catarina</option>
+                <option value="SP">São Paulo</option>
+                <option value="SE">Sergipe</option>
+                <option value="TO">Tocantins</option>
+              </select>
+            </div>
+          </div>
+          <div
+            style="margin-top:12px;padding:10px;background:var(--bg);border-radius:6px;border:1px solid var(--line);font-size:12px;color:var(--text-muted);">
+            🎁 Ao criar sua conta, você receberá <strong>7 dias de teste grátis</strong>!
+          </div>
+        </form>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" onclick="fecharCadastro()">Cancelar</button>
+        <button class="btn btn-primary" onclick="salvarCadastro()">📝 Cadastrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmação de Cadastro -->
+  <div class="overlay" id="overlay-confirmacao-cadastro">
+    <div class="modal" id="modal-confirmacao-cadastro" style="max-width:480px;">
+      <div class="modal-head" style="border-bottom:2px solid var(--ok);">
+        <h3 style="color:var(--ok);">✅ Cadastro realizado com sucesso!</h3>
+        <button class="modal-close" onclick="fecharConfirmacaoCadastro()">✕</button>
+      </div>
+      <div class="modal-body" id="confirmacao-cadastro-body">
+        <!-- Conteúdo dinâmico -->
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" onclick="fecharConfirmacaoCadastro()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Aviso de Vencimento -->
+  <div class="overlay" id="overlay-aviso-vencimento">
+    <div class="modal" id="modal-aviso-vencimento" style="max-width:460px;">
+      <div class="modal-head" style="border-bottom:2px solid var(--warn);">
+        <h3 style="color:var(--warn);">⚠️ Aviso de Vencimento</h3>
+      </div>
+      <div class="modal-body" id="aviso-vencimento-body">
+        <!-- Conteúdo dinâmico -->
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" onclick="fecharAvisoVencimento()">Entendi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Bloqueio por Expiração -->
+  <div class="overlay" id="overlay-bloqueio-expiracao">
+    <div class="modal" id="modal-bloqueio-expiracao" style="max-width:460px;">
+      <div class="modal-head" style="border-bottom:2px solid var(--danger);">
+        <h3 style="color:var(--danger);">🚫 Conta Bloqueada</h3>
+      </div>
+      <div class="modal-body" id="bloqueio-expiracao-body">
+        <!-- Conteúdo dinâmico -->
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-primary" onclick="fecharBloqueioExpiracao()">OK</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== BOTÃO VOLTAR AO TOPO ===== -->
   <button id="back-to-top" title="Voltar ao topo">↑</button>
@@ -2701,7 +2841,16 @@
             frota_abastecimento: true,
             frota_relatorio_abastecimento: true,
             frota_manutencao: true,
-            frota_configuracoes: true
+            frota_configuracoes: true,
+            frota_os: true,
+            frota_historico_os: true,
+            frota_relatorio_os: true,
+            // Permissões do módulo Serviços
+            servicos_orcamento: true,
+            servicos_orcamentos_gerados: true,
+            servicos_realizar: true,
+            servicos_concluidos: true,
+            servicos_configuracoes: true
           },
           createdAt: new Date().toISOString()
         }],
@@ -3673,11 +3822,54 @@
       let user = DB.users.find(u => u.email.toLowerCase() === email && u.senha === senha);
 
       if (user) {
-        if (user.bloqueado) {
-          errBox.textContent = 'Este usuário está bloqueado. Contate o administrador.';
-          errBox.style.display = 'block';
-          return;
+        // ===== VERIFICAÇÃO DE EXPIRAÇÃO =====
+        if (user.role !== 'admin') {
+          const subInfo = user.subscriptionInfo || {};
+
+          // Verificar se está bloqueado
+          if (user.bloqueado || subInfo.status === 'Bloqueado' || subInfo.status === 'Excluído') {
+            errBox.textContent = 'Esta conta está bloqueada. Contate o administrador.';
+            errBox.style.display = 'block';
+            return;
+          }
+
+          // Verificar vencimento
+          if (subInfo.dataVencimento) {
+            const dataVencimento = new Date(subInfo.dataVencimento);
+            const agora = new Date();
+
+            if (agora > dataVencimento) {
+              // Bloquear automaticamente
+              user.bloqueado = true;
+              subInfo.status = 'Bloqueado';
+              subInfo.dataBloqueio = agora.toISOString();
+              if (!subInfo.historicoBloqueios) subInfo.historicoBloqueios = [];
+              subInfo.historicoBloqueios.push({
+                data: agora.toISOString(),
+                motivo: 'Expiração automática',
+                usuario: 'Sistema'
+              });
+              await saveDB(DB);
+              exibirBloqueioExpiracao();
+              return;
+            }
+          }
+
+          // Verificar avisos de vencimento (apenas uma vez por dia)
+          verificarAvisosVencimento(user);
         }
+
+        // Atualizar último acesso
+        if (user.subscriptionInfo) {
+          user.subscriptionInfo.ultimoAcesso = new Date().toISOString();
+        }
+        if (!user.historicoAcessos) user.historicoAcessos = [];
+        user.historicoAcessos.push({
+          data: new Date().toISOString(),
+          ip: 'Login'
+        });
+        await saveDB(DB);
+
         session = { email: user.email, type: user.role };
         localStorage.setItem(SESSION_KEY, JSON.stringify(session));
         salvarLembrarLogin(email, senha, remember);
@@ -4143,8 +4335,7 @@
                                         <span class="ic">📝</span>Ordens de Serviço
                                       </div>
                                       <div class="nav-item ${currentView === 'frota_historico_os' ? 'active' : ''}" data-view="frota_historico_os">
-                                        <span class="ic">📜</span>Histórico
-                                      </div>
+                                        <span class="ic">📜</span>Histórico                                      </div>
                                       <div class="nav-item ${currentView === 'frota_relatorio_os' ? 'active' : ''}" data-view="frota_relatorio_os">
                                         <span class="ic">📊</span>Relatórios
                                       </div>
@@ -6076,17 +6267,20 @@
       frota_relatorio_abastecimento: 'Relatório de Abastecimento',
       frota_manutencao: 'Manutenção',
       frota_configuracoes: 'Configurações',
+      frota_os: 'Ordens de Serviço',
+      frota_historico_os: 'Histórico de OS',
+      frota_relatorio_os: 'Relatórios de OS',
       // Novas permissões de serviços
       servicos_orcamento: 'Novo Orçamento',
       servicos_orcamentos_gerados: 'Orçamentos Gerados',
       servicos_realizar: 'Realizar Serviços',
       servicos_concluidos: 'Serviços Concluídos',
-      servicos_configuracoes: 'Configurações de Serviços',
-      // Novas permissões de manutenção
-      frota_os: 'Ordens de Serviço',
-      frota_historico_os: 'Histórico de OS',
-      frota_relatorio_os: 'Relatórios de OS'
+      servicos_configuracoes: 'Configurações de Serviços'
     };
+
+    /* ============================================================
+       FUNÇÃO RENDER USUÁRIOS - PAINEL DO ADMINISTRADOR (CORRIGIDA)
+       ============================================================ */
 
     function renderUsuarios() {
       const user = getLoggedUser();
@@ -6095,354 +6289,1021 @@
         return;
       }
 
-      // Mostrar apenas usuários com role 'user' e ownerId igual ao admin
-      const list = DB.users.filter(u => u.role === 'user' && u.ownerId === user.id);
+      const list = DB.users.filter(u => u.role !== 'admin');
+      list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
 
-      document.getElementById('content').innerHTML = `
-                        <div class="page-head">
-                          <div><h1>Usuários</h1><div class="sub">Cadastro, bloqueio e permissões de acesso ao menu</div></div>
-                          <button class="btn btn-primary" onclick="openUserForm()">+ Novo Usuário</button>
-                        </div>
-                        <div class="table-wrap">
-                          ${list.length ? `<table><thead><tr><th>Nome</th><th>E-mail</th><th>Status</th><th>Permissões liberadas</th><th>Data Criação</th><th>Ações</th></tr></thead><tbody>
-                          ${list.map(u => `
-                            <tr>
-                              <td><strong>${esc(u.nome)}</strong></td>
-                              <td>${esc(u.email)}</td>
-                              <td>${u.bloqueado ? '<span class="badge badge-danger">Bloqueado</span>' : '<span class="badge badge-ok">Ativo</span>'}</td>
-                              <td style="white-space:normal;max-width:260px;">${Object.keys(PERM_LABELS).filter(k => u.permissoes && u.permissoes[k]).map(k => PERM_LABELS[k]).join(', ') || '<span class="sub">Nenhuma</span>'}</td>
-                              <td>${fmtDateTime(u.createdAt)}</td>
-                              <td class="actions-cell">
-                                <button class="icon-btn" title="Editar / Permissões" onclick="openUserForm('${u.id}')">✎</button>
-                                <button class="icon-btn" title="${u.bloqueado ? 'Desbloquear' : 'Bloquear'}" onclick="toggleBloqueioUsuario('${u.id}')">${u.bloqueado ? '🔓' : '🔒'}</button>
-                                <button class="icon-btn" title="Redefinir senha" onclick="resetSenhaUsuario('${u.id}')">🔑</button>
-                                <button class="icon-btn btn-excluir" title="Excluir" onclick="deleteUsuario('${u.id}')">🗑</button>
-                              </td>
-                            </tr>`).join('')}
-                          </tbody></table>` : `<div class="empty-state"><div class="big">👤</div>Nenhum usuário cadastrado ainda.</div>`}
-                        </div>
-                      `;
-    }
+      let contentHtml = `
+        <div class="page-head">
+          <div><h1>👤 Usuários</h1><div class="sub">Gerenciamento completo de usuários</div></div>
+          <button class="btn btn-primary" id="btn-novo-usuario-admin">+ Novo Usuário</button>
+        </div>
+        <div class="table-wrap" style="overflow-x:auto;">
+          ${list.length ? `
+          <table style="min-width:1000px;">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Senha</th>
+                <th>Telefone</th>
+                <th>Cidade</th>
+                <th>Estado</th>
+                <th>Data Cadastro</th>
+                <th>Hora Cadastro</th>
+                <th>Plano</th>
+                <th>Status</th>
+                <th>Data Vencimento</th>
+                <th>Dias Rest.</th>
+                <th>Último Login</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+            ${list.map(u => {
+        const sub = u.subscriptionInfo || {};
+        const status = sub.status || 'Ativo';
+        const statusClass = status === 'Ativo' ? 'badge-ok' :
+          status === 'Teste' ? 'badge-wait' :
+            status === 'Bloqueado' ? 'badge-danger' :
+              status === 'Liberado' ? 'badge-ok' :
+                status === 'Excluído' ? 'badge-excluido' : 'badge-wait';
 
-    function openUserForm(id) {
-      const user = getLoggedUser();
-      if (!user || user.role !== 'admin') { toast('Acesso negado.', true); return; }
+        const dataVenc = sub.dataVencimento ? new Date(sub.dataVencimento) : null;
+        const diasRest = dataVenc ? Math.ceil((dataVenc - new Date()) / (1000 * 60 * 60 * 24)) : '—';
+        const diasDisplay = diasRest !== '—' ? (diasRest > 0 ? diasRest : '0') : '—';
 
-      const u = id ? DB.users.find(x => x.id === id && x.ownerId === user.id) : null;
-      const perms = u ? u.permissoes : {
-        dashboard: true,
-        cadastro: true,
-        colocacao: true,
-        remocao: true,
-        servicos: true,
-        geral: true,
-        configuracoes: false,
-        excluidos: false,
-        financeiro: true,
-        dependentes: true,
-        frota: false,
-        frota_abastecimento: false,
-        frota_relatorio_abastecimento: false,
-        frota_manutencao: false,
-        frota_configuracoes: false,
-        servicos_orcamento: false,
-        servicos_orcamentos_gerados: false,
-        servicos_realizar: false,
-        servicos_concluidos: false,
-        servicos_configuracoes: false,
-        frota_os: false,
-        frota_historico_os: false,
-        frota_relatorio_os: false
-      };
-
-      // Construir o HTML dos cards de permissões
-      let permissoesHtml = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
-      `;
-
-      // Card Dashboard
-      permissoesHtml += `
-        <div class="card" style="padding:12px;">
-          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
-            <span>📊</span> Dashboard
-          </h4>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            <label class="checkline" style="padding:2px 0;">
-              <input type="checkbox" id="perm-dashboard" ${perms.dashboard ? 'checked' : ''}> Dashboard
-            </label>
-          </div>
+        return `
+                <tr>
+                  <td><strong>${esc(u.nome)}</strong></td>
+                  <td>${esc(u.email)}</td>
+                  <td style="font-family:monospace;font-size:12px;">${esc(u.senha)}</td>
+                  <td>${esc(u.telefone || '—')}</td>
+                  <td>${esc(u.cidade || '—')}</td>
+                  <td>${esc(u.estado || '—')}</td>
+                  <td>${u.createdAt ? new Date(u.createdAt).toLocaleDateString('pt-BR') : '—'}</td>
+                  <td>${u.createdAt ? new Date(u.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+                  <td>${esc(sub.plano || '—')}</td>
+                  <td><span class="badge ${statusClass}">${esc(status)}</span></td>
+                  <td>${dataVenc ? dataVenc.toLocaleDateString('pt-BR') : '—'}</td>
+                  <td style="font-weight:600;color:${diasDisplay === '—' || diasDisplay === '0' ? 'var(--danger)' : 'var(--ok)'};">${diasDisplay}</td>
+                  <td>${sub.ultimoAcesso ? fmtDateTime(sub.ultimoAcesso) : '—'}</td>
+                  <td class="actions-cell" style="min-width:220px;">
+                    <button class="icon-btn" title="Salvar" onclick="window.salvarUsuarioAdmin('${u.id}')">💾</button>
+                    <button class="icon-btn" title="Editar" onclick="window.editarUsuarioAdmin('${u.id}')">✎</button>
+                    <button class="icon-btn btn-excluir" title="Excluir" onclick="window.excluirUsuarioAdmin('${u.id}')">🗑</button>
+                    <button class="icon-btn" title="${u.bloqueado ? 'Desbloquear' : 'Bloquear'}" onclick="window.toggleBloqueioUsuarioAdmin('${u.id}')">${u.bloqueado ? '🔓' : '🔒'}</button>
+                    <button class="icon-btn" style="background:var(--ok);color:#fff;border-color:var(--ok);" title="Liberar" onclick="window.liberarUsuarioAdmin('${u.id}')">✅</button>
+                  </td>
+                </tr>
+              `;
+      }).join('')}
+            </tbody>
+          </table>
+          ` : `<div class="empty-state"><div class="big">👤</div>Nenhum usuário cadastrado ainda.</div>`}
         </div>
       `;
 
-      // Card Caçambas
-      const cacambasPerms = ['cadastro', 'colocacao', 'remocao', 'geral', 'configuracoes', 'excluidos', 'financeiro'];
-      const cacambasLabels = {
+      // Adicionar seção de Permissões do Usuário (apenas para usuários comuns)
+      if (list.length > 0) {
+        contentHtml += `
+          <div style="margin-top: 20px;">
+            <div class="page-head" style="margin-bottom: 0;">
+              <div><h1 style="font-size: 18px;">🔑 Permissões do Usuário</h1><div class="sub">Gerencie as permissões de acesso para cada usuário</div></div>
+            </div>
+            ${list.map(u => `
+              <div class="card" style="margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                  <div>
+                    <strong style="font-size: 16px;">${esc(u.nome)}</strong>
+                    <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">${esc(u.email)}</span>
+                  </div>
+                  <button class="btn btn-sm btn-primary" onclick="window.abrirModalPermissoes('${u.id}')">✎ Editar Permissões</button>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px;">
+                  ${Object.keys(PERM_LABELS).filter(k => u.permissoes && u.permissoes[k] === true).map(k => `<span class="badge badge-ok" style="font-size: 10px;">${PERM_LABELS[k]}</span>`).join('') || '<span style="color: var(--text-muted);">Nenhuma permissão concedida.</span>'}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      document.getElementById('content').innerHTML = contentHtml;
+
+      // Event listener para o botão Novo Usuário
+      document.getElementById('btn-novo-usuario-admin').addEventListener('click', function () {
+        window.openUserFormAdmin();
+      });
+    }
+
+    // ===== EXPORTAR FUNÇÕES PARA O ESCOPO GLOBAL =====
+    window.openUserFormAdmin = function () {
+      openModal(`
+        <div class="modal-head"><h3>📝 Novo Usuário</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">
+          <div class="f-row">
+            <div class="field2">
+              <label>Nome *</label>
+              <input id="admin-novo-nome" placeholder="Nome completo">
+            </div>
+            <div class="field2">
+              <label>E-mail *</label>
+              <input id="admin-novo-email" type="email" placeholder="email@exemplo.com">
+            </div>
+          </div>
+          <div class="f-row">
+            <div class="field2">
+              <label>Senha *</label>
+              <input id="admin-novo-senha" type="password" placeholder="••••••••">
+            </div>
+            <div class="field2">
+              <label>Telefone</label>
+              <input id="admin-novo-telefone" placeholder="(00) 00000-0000">
+            </div>
+          </div>
+          <div class="f-row">
+            <div class="field2">
+              <label>Cidade</label>
+              <input id="admin-novo-cidade" placeholder="Cidade">
+            </div>
+            <div class="field2">
+              <label>Estado</label>
+              <select id="admin-novo-estado">
+                <option value="">Selecione</option>
+                ${['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'].map(uf =>
+        `<option value="${uf}">${uf}</option>`
+      ).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="field2">
+            <label>Plano</label>
+            <select id="admin-novo-plano">
+              <option value="Teste">Teste</option>
+              <option value="Mensal">Mensal</option>
+              <option value="Trimestral">Trimestral</option>
+              <option value="Anual">Anual</option>
+            </select>
+          </div>
+          <div class="field2">
+            <label>Status</label>
+            <select id="admin-novo-status">
+              <option value="Ativo">Ativo</option>
+              <option value="Teste">Teste</option>
+              <option value="Bloqueado">Bloqueado</option>
+              <option value="Liberado">Liberado</option>
+              <option value="Excluído">Excluído</option>
+            </select>
+          </div>
+          <div class="field2">
+            <label>Data de Vencimento</label>
+            <input type="date" id="admin-novo-vencimento">
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="window.salvarNovoUsuarioAdmin()">📝 Criar Usuário</button>
+        </div>
+      `);
+    };
+
+    window.salvarNovoUsuarioAdmin = async function () {
+      const nome = document.getElementById('admin-novo-nome').value.trim();
+      const email = document.getElementById('admin-novo-email').value.trim().toLowerCase();
+      const senha = document.getElementById('admin-novo-senha').value;
+      const telefone = document.getElementById('admin-novo-telefone').value.trim();
+      const cidade = document.getElementById('admin-novo-cidade').value.trim();
+      const estado = document.getElementById('admin-novo-estado').value;
+      const plano = document.getElementById('admin-novo-plano').value;
+      const status = document.getElementById('admin-novo-status').value;
+      const dataVencimentoStr = document.getElementById('admin-novo-vencimento').value;
+
+      if (!nome) { toast('Preencha o nome do usuário.', true); return; }
+      if (!email) { toast('Preencha o e-mail.', true); return; }
+      if (!email.includes('@') || !email.includes('.')) { toast('E-mail inválido.', true); return; }
+      if (!senha || senha.length < 4) { toast('A senha deve ter pelo menos 4 caracteres.', true); return; }
+
+      const usuarioExistente = DB.users.find(u => u.email.toLowerCase() === email);
+      if (usuarioExistente) {
+        toast('Este e-mail já está cadastrado.', true);
+        return;
+      }
+
+      const admin = DB.users.find(u => u.role === 'admin');
+      if (!admin) {
+        toast('Nenhum administrador encontrado.', true);
+        return;
+      }
+
+      const agora = new Date();
+      const dataCadastro = agora.toISOString();
+      let dataVencimento = null;
+      let diasRestantes = 0;
+
+      if (dataVencimentoStr) {
+        const venc = new Date(dataVencimentoStr + 'T00:00:00');
+        dataVencimento = venc.toISOString();
+        diasRestantes = Math.ceil((venc - agora) / (1000 * 60 * 60 * 24));
+      }
+
+      const novoUsuario = {
+        id: uid(),
+        nome: nome,
+        email: email,
+        senha: senha,
+        role: 'user',
+        bloqueado: status === 'Bloqueado' || status === 'Excluído',
+        ownerId: admin.id,
+        permissoes: {
+          dashboard: true,
+          cadastro: true,
+          colocacao: true,
+          remocao: true,
+          servicos: true,
+          geral: true,
+          configuracoes: false,
+          excluidos: false,
+          financeiro: true,
+          dependentes: true,
+          frota: false,
+          frota_abastecimento: false,
+          frota_relatorio_abastecimento: false,
+          frota_manutencao: false,
+          frota_configuracoes: false,
+          frota_os: false,
+          frota_historico_os: false,
+          frota_relatorio_os: false,
+          servicos_orcamento: false,
+          servicos_orcamentos_gerados: false,
+          servicos_realizar: false,
+          servicos_concluidos: false,
+          servicos_configuracoes: false
+        },
+        createdAt: dataCadastro,
+        createdBy: 'Administrador',
+        telefone: telefone,
+        cidade: cidade,
+        estado: estado,
+        subscriptionInfo: {
+          plano: plano,
+          status: status,
+          dataCadastro: dataCadastro,
+          dataInicio: dataCadastro,
+          dataVencimento: dataVencimento,
+          diasRestantes: diasRestantes > 0 ? diasRestantes : 0,
+          horasRestantes: diasRestantes > 0 ? diasRestantes * 24 : 0,
+          ultimoAcesso: dataCadastro,
+          dataBloqueio: status === 'Bloqueado' ? dataCadastro : null,
+          dataUltimaLiberacao: status === 'Liberado' ? dataCadastro : null,
+          historicoBloqueios: status === 'Bloqueado' ? [{ data: dataCadastro, motivo: 'Criado como bloqueado', usuario: 'Administrador' }] : [],
+          historicoLiberacoes: status === 'Liberado' ? [{ data: dataCadastro, motivo: 'Criado como liberado', usuario: 'Administrador' }] : [],
+          observacoes: 'Usuário criado pelo administrador.'
+        },
+        historicoAcessos: [{
+          data: dataCadastro,
+          ip: 'Criação pelo administrador'
+        }]
+      };
+
+      DB.users.push(novoUsuario);
+      await saveDB(DB);
+      closeModal();
+      toast(`✅ Usuário ${nome} criado com sucesso!`);
+      renderUsuarios();
+    };
+
+    window.editarUsuarioAdmin = async function (id) {
+      const user = DB.users.find(u => u.id === id);
+      if (!user) { toast('Usuário não encontrado.', true); return; }
+
+      const sub = user.subscriptionInfo || {};
+
+      openModal(`
+        <div class="modal-head"><h3>✎ Editar Usuário: ${esc(user.nome)}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">
+          <div class="f-row">
+            <div class="field2">
+              <label>Nome</label>
+              <input id="admin-edit-nome" value="${esc(user.nome)}">
+            </div>
+            <div class="field2">
+              <label>E-mail</label>
+              <input id="admin-edit-email" value="${esc(user.email)}">
+            </div>
+          </div>
+          <div class="f-row">
+            <div class="field2">
+              <label>Senha</label>
+              <input id="admin-edit-senha" value="${esc(user.senha)}" style="font-family:monospace;">
+            </div>
+            <div class="field2">
+              <label>Telefone</label>
+              <input id="admin-edit-telefone" value="${esc(user.telefone || '')}">
+            </div>
+          </div>
+          <div class="f-row">
+            <div class="field2">
+              <label>Cidade</label>
+              <input id="admin-edit-cidade" value="${esc(user.cidade || '')}">
+            </div>
+            <div class="field2">
+              <label>Estado</label>
+              <select id="admin-edit-estado">
+                <option value="">Selecione</option>
+                ${['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'].map(uf =>
+        `<option value="${uf}" ${user.estado === uf ? 'selected' : ''}>${uf}</option>`
+      ).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="f-row">
+            <div class="field2">
+              <label>Plano</label>
+              <select id="admin-edit-plano">
+                <option value="Teste" ${sub.plano === 'Teste' ? 'selected' : ''}>Teste</option>
+                <option value="Mensal" ${sub.plano === 'Mensal' ? 'selected' : ''}>Mensal</option>
+                <option value="Trimestral" ${sub.plano === 'Trimestral' ? 'selected' : ''}>Trimestral</option>
+                <option value="Anual" ${sub.plano === 'Anual' ? 'selected' : ''}>Anual</option>
+              </select>
+            </div>
+            <div class="field2">
+              <label>Status</label>
+              <select id="admin-edit-status">
+                <option value="Ativo" ${sub.status === 'Ativo' ? 'selected' : ''}>Ativo</option>
+                <option value="Teste" ${sub.status === 'Teste' ? 'selected' : ''}>Teste</option>
+                <option value="Bloqueado" ${sub.status === 'Bloqueado' ? 'selected' : ''}>Bloqueado</option>
+                <option value="Liberado" ${sub.status === 'Liberado' ? 'selected' : ''}>Liberado</option>
+                <option value="Excluído" ${sub.status === 'Excluído' ? 'selected' : ''}>Excluído</option>
+              </select>
+            </div>
+          </div>
+          <div class="field2">
+            <label>Data de Vencimento</label>
+            <input type="date" id="admin-edit-vencimento" value="${sub.dataVencimento ? sub.dataVencimento.split('T')[0] : ''}">
+          </div>
+          <div class="field2">
+            <label>Observações</label>
+            <input id="admin-edit-observacoes" value="${esc(sub.observacoes || '')}">
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="window.salvarEdicaoUsuarioAdmin('${user.id}')">💾 Salvar</button>
+        </div>
+      `);
+    };
+
+    window.salvarEdicaoUsuarioAdmin = async function (id) {
+      const user = DB.users.find(u => u.id === id);
+      if (!user) { toast('Usuário não encontrado.', true); return; }
+
+      user.nome = document.getElementById('admin-edit-nome').value.trim();
+      user.email = document.getElementById('admin-edit-email').value.trim().toLowerCase();
+      user.senha = document.getElementById('admin-edit-senha').value.trim();
+      user.telefone = document.getElementById('admin-edit-telefone').value.trim();
+      user.cidade = document.getElementById('admin-edit-cidade').value.trim();
+      user.estado = document.getElementById('admin-edit-estado').value;
+
+      if (!user.subscriptionInfo) user.subscriptionInfo = {};
+      user.subscriptionInfo.plano = document.getElementById('admin-edit-plano').value;
+      user.subscriptionInfo.status = document.getElementById('admin-edit-status').value;
+      user.subscriptionInfo.observacoes = document.getElementById('admin-edit-observacoes').value.trim();
+
+      const dataVencimento = document.getElementById('admin-edit-vencimento').value;
+      if (dataVencimento) {
+        user.subscriptionInfo.dataVencimento = new Date(dataVencimento + 'T00:00:00').toISOString();
+        const agora = new Date();
+        const venc = new Date(dataVencimento + 'T00:00:00');
+        user.subscriptionInfo.diasRestantes = Math.ceil((venc - agora) / (1000 * 60 * 60 * 24));
+      }
+
+      await saveDB(DB);
+      closeModal();
+      toast('Usuário atualizado com sucesso!');
+      renderUsuarios();
+    };
+
+    window.salvarUsuarioAdmin = function (id) {
+      toast('Use o botão Editar para modificar as informações.', true);
+    };
+
+    window.toggleBloqueioUsuarioAdmin = async function (id) {
+      const user = DB.users.find(u => u.id === id);
+      if (!user) { toast('Usuário não encontrado.', true); return; }
+
+      user.bloqueado = !user.bloqueado;
+      user.subscriptionInfo = user.subscriptionInfo || {};
+
+      if (user.bloqueado) {
+        user.subscriptionInfo.status = 'Bloqueado';
+        user.subscriptionInfo.dataBloqueio = new Date().toISOString();
+        if (!user.subscriptionInfo.historicoBloqueios) user.subscriptionInfo.historicoBloqueios = [];
+        user.subscriptionInfo.historicoBloqueios.push({
+          data: new Date().toISOString(),
+          motivo: 'Bloqueio manual pelo administrador',
+          usuario: getLoggedUser()?.nome || 'Administrador'
+        });
+      } else {
+        user.subscriptionInfo.status = 'Ativo';
+        user.subscriptionInfo.dataUltimaLiberacao = new Date().toISOString();
+        if (!user.subscriptionInfo.historicoLiberacoes) user.subscriptionInfo.historicoLiberacoes = [];
+        user.subscriptionInfo.historicoLiberacoes.push({
+          data: new Date().toISOString(),
+          motivo: 'Desbloqueio manual pelo administrador',
+          usuario: getLoggedUser()?.nome || 'Administrador'
+        });
+      }
+
+      await saveDB(DB);
+      toast(user.bloqueado ? 'Usuário bloqueado.' : 'Usuário desbloqueado.');
+      renderUsuarios();
+    };
+
+    window.liberarUsuarioAdmin = async function (id) {
+      const user = DB.users.find(u => u.id === id);
+      if (!user) { toast('Usuário não encontrado.', true); return; }
+
+      if (!user.subscriptionInfo) user.subscriptionInfo = {};
+
+      const agora = new Date();
+      const novaDataVencimento = new Date(agora);
+      novaDataVencimento.setDate(novaDataVencimento.getDate() + 30);
+
+      user.bloqueado = false;
+      user.subscriptionInfo.status = 'Liberado';
+      user.subscriptionInfo.dataVencimento = novaDataVencimento.toISOString();
+      user.subscriptionInfo.dataUltimaLiberacao = agora.toISOString();
+      user.subscriptionInfo.diasRestantes = 30;
+
+      if (!user.subscriptionInfo.historicoLiberacoes) user.subscriptionInfo.historicoLiberacoes = [];
+      user.subscriptionInfo.historicoLiberacoes.push({
+        data: agora.toISOString(),
+        motivo: 'Liberação manual pelo administrador',
+        usuario: getLoggedUser()?.nome || 'Administrador',
+        diasConcedidos: 30,
+        novoVencimento: novaDataVencimento.toISOString()
+      });
+
+      await saveDB(DB);
+      toast(`✅ Usuário liberado! Novo vencimento: ${novaDataVencimento.toLocaleDateString('pt-BR')}`);
+      renderUsuarios();
+    };
+
+    // ===== FUNÇÃO DE EXCLUSÃO COMPLETA DE USUÁRIO (CORRIGIDA) =====
+    window.excluirUsuarioAdmin = async function (id) {
+      // 1. Confirmação
+      if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação é permanente e removerá todos os dados do banco de dados.')) {
+        return;
+      }
+
+      try {
+        const user = DB.users.find(u => u.id === id);
+        if (!user) {
+          toast('Usuário não encontrado.', true);
+          return;
+        }
+
+        // 2. Coletar UID do usuário e email para referência
+        const uidToDelete = user.id;
+        const emailToDelete = user.email;
+        const nomeToDelete = user.nome;
+
+        // 3. Função auxiliar para remover itens de um array baseado no ownerId
+        function filterByOwnerId(array, ownerId) {
+          if (!Array.isArray(array)) return [];
+          return array.filter(item => item.ownerId !== ownerId);
+        }
+
+        // 4. Remover o usuário da lista de usuários
+        DB.users = DB.users.filter(u => u.id !== uidToDelete);
+
+        // 5. Limpar todas as coleções que contêm dados do usuário
+        // Mapeamento de todas as coleções que podem ter dados relacionados ao UID
+        const collectionsToClean = [
+          'cacambas',
+          'motoristas',
+          'planos',
+          'locais',
+          'tiposMateriais',
+          'clientes',
+          'intercorrencias',
+          'cidades',
+          'dependentes',
+          'veiculos',
+          'motoristasFrota',
+          'abastecimentos',
+          'ordensServico',
+          'historicoOS',
+          'servicos_orcamentos',
+          'servicos_agendados',
+          'servicos_concluidos',
+          'servicos_configuracoes',
+          'servicos_tipos'
+        ];
+
+        // Limpar cada coleção
+        collectionsToClean.forEach(collectionName => {
+          if (Array.isArray(DB[collectionName])) {
+            DB[collectionName] = filterByOwnerId(DB[collectionName], uidToDelete);
+          }
+        });
+
+        // 6. Verificar se há dependentes aninhados (ownerId do dependente é o ID do usuário)
+        // Os dependentes já foram removidos pela limpeza acima, mas verificação extra:
+        if (Array.isArray(DB.dependentes)) {
+          DB.dependentes = DB.dependentes.filter(d => d.ownerId !== uidToDelete);
+        }
+
+        // 7. Salvar o banco de dados limpo
+        await saveDB(DB);
+
+        // 8. Mensagem de sucesso
+        toast(`✅ Usuário ${nomeToDelete} (${emailToDelete}) foi completamente excluído do sistema.`);
+
+        // 9. Verificar se o usuário excluído é o mesmo que está logado (segurança extra)
+        const currentUser = getLoggedUser();
+        if (currentUser && currentUser.id === uidToDelete) {
+          // Se o admin excluiu a própria conta, fazer logout
+          toast('Sua conta foi excluída. Você será desconectado.', true);
+          session = null;
+          localStorage.removeItem(SESSION_KEY);
+          boot();
+          return;
+        }
+
+        // 10. Recarregar a lista de usuários
+        renderUsuarios();
+        toast(`Usuário ${nomeToDelete} removido completamente.`);
+
+      } catch (error) {
+        console.error('Erro ao excluir usuário:', error);
+        toast('Erro ao excluir usuário: ' + error.message, true);
+      }
+    };
+
+    // ===== MODAL DE PERMISSÕES DO USUÁRIO (NOVO) =====
+    window.abrirModalPermissoes = function (userId) {
+      const user = DB.users.find(u => u.id === userId);
+      if (!user) {
+        toast('Usuário não encontrado.', true);
+        return;
+      }
+
+      // Definir estrutura de permissões agrupadas
+      const permGroups = {
+        'Dashboard': ['dashboard'],
+        'Caçambas': ['cadastro', 'colocacao', 'remocao', 'geral', 'financeiro', 'excluidos', 'configuracoes'],
+        'Serviços': ['servicos_orcamento', 'servicos_orcamentos_gerados', 'servicos_realizar', 'servicos_concluidos', 'servicos_configuracoes'],
+        'Frota': ['frota_abastecimento', 'frota_relatorio_abastecimento', 'frota_os', 'frota_historico_os', 'frota_relatorio_os', 'frota_configuracoes'],
+        'Configurações': ['configuracoes'],
+        'Dependentes': ['dependentes']
+      };
+
+      // Labels para exibição
+      const permLabels = {
+        dashboard: 'Dashboard',
         cadastro: 'Cadastro de Clientes',
         colocacao: 'Colocação',
         remocao: 'Remoção',
         geral: 'Geral',
-        configuracoes: 'Configurações',
+        financeiro: 'Financeiro',
         excluidos: 'Excluídos',
-        financeiro: 'Financeiro'
-      };
-
-      permissoesHtml += `
-        <div class="card" style="padding:12px;">
-          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
-            <span>🚛</span> Caçambas
-          </h4>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            ${cacambasPerms.map(key => `
-              <label class="checkline" style="padding:2px 0;">
-                <input type="checkbox" id="perm-${key}" ${perms[key] ? 'checked' : ''}> ${cacambasLabels[key]}
-              </label>
-            `).join('')}
-          </div>
-        </div>
-      `;
-
-      // Card Serviços
-      const servicosPerms = ['servicos_orcamento', 'servicos_orcamentos_gerados', 'servicos_realizar', 'servicos_concluidos',
-        'servicos_configuracoes'
-      ];
-      const servicosLabels = {
+        configuracoes: 'Configurações',
         servicos_orcamento: 'Novo Orçamento',
         servicos_orcamentos_gerados: 'Orçamentos Gerados',
         servicos_realizar: 'Realizar Serviços',
         servicos_concluidos: 'Serviços Concluídos',
-        servicos_configuracoes: 'Configurações'
-      };
-
-      permissoesHtml += `
-        <div class="card" style="padding:12px;">
-          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
-            <span>🛠</span> Serviços
-          </h4>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            ${servicosPerms.map(key => `
-              <label class="checkline" style="padding:2px 0;">
-                <input type="checkbox" id="perm-${key}" ${perms[key] ? 'checked' : ''}> ${servicosLabels[key]}
-              </label>
-            `).join('')}
-          </div>
-        </div>
-      `;
-
-      // Card Frota
-      const frotaPerms = ['frota_abastecimento', 'frota_relatorio_abastecimento', 'frota_os', 'frota_historico_os',
-        'frota_relatorio_os', 'frota_configuracoes'
-      ];
-      const frotaLabels = {
+        servicos_configuracoes: 'Configurações',
         frota_abastecimento: 'Registro de Abastecimento',
         frota_relatorio_abastecimento: 'Relatório de Abastecimento',
         frota_os: 'Ordens de Serviço',
         frota_historico_os: 'Histórico',
         frota_relatorio_os: 'Relatórios',
-        frota_configuracoes: 'Configurações'
+        frota_configuracoes: 'Configurações',
+        dependentes: 'Permitir acesso'
       };
 
-      permissoesHtml += `
-        <div class="card" style="padding:12px;">
-          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
-            <span>🚚</span> Frota
-          </h4>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            ${frotaPerms.map(key => `
-              <label class="checkline" style="padding:2px 0;">
-                <input type="checkbox" id="perm-${key}" ${perms[key] ? 'checked' : ''}> ${frotaLabels[key]}
-              </label>
-            `).join('')}
+      // Construir HTML das permissões
+      let permsHtml = '';
+      for (const [groupName, keys] of Object.entries(permGroups)) {
+        permsHtml += `
+          <div class="card" style="padding: 10px; margin-bottom: 8px;">
+            <h4 style="margin: 0 0 6px 0; font-size: 13px; color: var(--text-muted);">${groupName}</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px;">
+        `;
+        keys.forEach(key => {
+          const checked = user.permissoes && user.permissoes[key] === true ? 'checked' : '';
+          permsHtml += `
+            <label class="checkline" style="padding: 2px 0; font-size: 13px;">
+              <input type="checkbox" class="perm-checkbox" data-perm="${key}" ${checked}> ${permLabels[key] || key}
+            </label>
+          `;
+        });
+        permsHtml += `
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      }
 
-      // Card Configurações
-      permissoesHtml += `
-        <div class="card" style="padding:12px;">
-          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
-            <span>⚙</span> Configurações
-          </h4>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            <label class="checkline" style="padding:2px 0;">
-              <input type="checkbox" id="perm-configuracoes" ${perms.configuracoes ? 'checked' : ''}> Configurações
+      // Adicionar checkbox para "Acesso ao Sistema" (sempre true)
+      permsHtml += `
+        <div class="card" style="padding: 10px; margin-bottom: 8px; opacity: 0.6;">
+          <h4 style="margin: 0 0 6px 0; font-size: 13px; color: var(--text-muted);">Acesso</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px 16px;">
+            <label class="checkline" style="padding: 2px 0; font-size: 13px;">
+              <input type="checkbox" checked disabled> Acesso ao Sistema
             </label>
           </div>
         </div>
       `;
 
-      // Card Usuários / Dependentes
-      permissoesHtml += `
-        <div class="card" style="padding:12px;">
-          <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
-            <span>👥</span> Usuários / Dependentes
-          </h4>
-          <div style="display:flex;flex-direction:column;gap:2px;">
-            <label class="checkline" style="padding:2px 0;">
-              <input type="checkbox" id="perm-dependentes" ${perms.dependentes ? 'checked' : ''}> Dependentes
-            </label>
-          </div>
-        </div>
-      `;
-
-      permissoesHtml += `</div>`;
-
-      // Montar o modal completo
       openModal(`
-        <div class="modal-head"><h3>${u ? 'Editar Usuário' : 'Novo Usuário'}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
-        <div class="modal-body">
-          <div class="field2"><label>Nome</label><input id="u-nome" value="${u ? esc(u.nome) : ''}"></div>
-          <div class="field2"><label>E-mail</label><input id="u-email" type="email" value="${u ? esc(u.email) : ''}"></div>
-          <div class="field2"><label>Senha</label><input id="u-senha" type="text" value="${u ? esc(u.senha) : ''}" placeholder="${u ? 'Deixe para manter a senha atual' : 'Senha de acesso'}"></div>
-          <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin:16px 0 8px;">Permissões de menu</label>
-          ${permissoesHtml}
+        <div class="modal-head"><h3>🔑 Gerenciar Permissões: ${esc(user.nome)}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+        <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            Selecione os módulos que este usuário poderá acessar.
+          </p>
+          ${permsHtml}
         </div>
         <div class="modal-foot">
           <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-          <button class="btn btn-primary" onclick="saveUsuario(${u ? `'${u.id}'` : 'null'})">Salvar</button>
+          <button class="btn btn-primary" onclick="window.salvarPermissoesUsuario('${userId}')">💾 Salvar Permissões</button>
         </div>
       `);
-    }
-    window.openUserForm = openUserForm;
+    };
 
-    async function saveUsuario(id) {
-      const user = getLoggedUser();
-      if (!user || user.role !== 'admin') { toast('Acesso negado.', true); return; }
-
-      const nome = document.getElementById('u-nome').value.trim();
-      const email = document.getElementById('u-email').value.trim().toLowerCase();
-      const senha = document.getElementById('u-senha').value;
-
-      const allPermKeys = [
-        'dashboard', 'cadastro', 'colocacao', 'remocao',
-        'geral', 'configuracoes', 'excluidos', 'financeiro', 'dependentes',
-        'servicos_orcamento', 'servicos_orcamentos_gerados', 'servicos_realizar', 'servicos_concluidos',
-        'servicos_configuracoes',
-        'frota_abastecimento', 'frota_relatorio_abastecimento', 'frota_os', 'frota_historico_os',
-        'frota_relatorio_os', 'frota_configuracoes'
-      ];
-
-      const permissoes = {};
-      allPermKeys.forEach(k => {
-        const el = document.getElementById('perm-' + k);
-        permissoes[k] = el ? el.checked : false;
-      });
-
-      if (!nome || !email) { toast('Preencha nome e e-mail.', true); return; }
-
-      // Verificar se já existe usuário com este email (apenas entre os usuários do mesmo admin)
-      const exists = DB.users.find(u => u.email.toLowerCase() === email && u.id !== id && u.role === 'user' && u.ownerId === user.id);
-      if (exists) { toast('Já existe um usuário com este e-mail.', true); return; }
-
-      if (id) {
-        const u = DB.users.find(x => x.id === id);
-        if (!u || u.role !== 'user' || u.ownerId !== user.id) {
-          toast('Usuário não encontrado.', true);
-          return;
-        }
-        u.nome = nome;
-        u.email = email;
-        u.permissoes = permissoes;
-        if (senha) u.senha = senha;
-        await saveDB(DB);
-        toast('Usuário atualizado.');
-      } else {
-        if (!senha) { toast('Defina uma senha para o novo usuário.', true); return; }
-        const novoUsuario = {
-          id: uid(),
-          nome,
-          email,
-          senha,
-          role: 'user',
-          bloqueado: false,
-          permissoes,
-          ownerId: user.id, // 🔒 Vincula ao admin que está criando
-          createdAt: new Date().toISOString()
-        };
-        DB.users.push(novoUsuario);
-        await saveDB(DB);
-        toast('Usuário cadastrado com sucesso.');
-      }
-
-      closeModal();
-      boot();
-    }
-    window.saveUsuario = saveUsuario;
-
-    async function toggleBloqueioUsuario(id) {
-      const user = getLoggedUser();
-      if (!user || user.role !== 'admin') { toast('Acesso negado.', true); return; }
-
-      const u = DB.users.find(x => x.id === id);
-      if (!u || u.role !== 'user' || u.ownerId !== user.id) { toast('Usuário não encontrado.', true); return; }
-      u.bloqueado = !u.bloqueado;
-      await saveDB(DB);
-      toast(u.bloqueado ? 'Usuário bloqueado.' : 'Usuário desbloqueado.');
-      boot();
-    }
-    window.toggleBloqueioUsuario = toggleBloqueioUsuario;
-
-    async function resetSenhaUsuario(id) {
-      const user = getLoggedUser();
-      if (!user || user.role !== 'admin') { toast('Acesso negado.', true); return; }
-
-      const u = DB.users.find(x => x.id === id);
-      if (!u || u.role !== 'user' || u.ownerId !== user.id) { toast('Usuário não encontrado.', true); return; }
-
-      const novaSenha = prompt('Digite a nova senha para o usuário ' + u.nome + ':');
-      if (novaSenha === null) return;
-      if (novaSenha.trim().length < 4) {
-        toast('A senha deve ter pelo menos 4 caracteres.', true);
+    window.salvarPermissoesUsuario = async function (userId) {
+      const user = DB.users.find(u => u.id === userId);
+      if (!user) {
+        toast('Usuário não encontrado.', true);
         return;
       }
 
-      u.senha = novaSenha.trim();
-      await saveDB(DB);
-      toast('Senha redefinida com sucesso.');
-      boot();
-    }
-    window.resetSenhaUsuario = resetSenhaUsuario;
+      // Coletar todas as permissões dos checkboxes
+      const checkboxes = document.querySelectorAll('.perm-checkbox');
+      const permissoes = {};
 
-    async function deleteUsuario(id) {
-      if (!confirm('Tem certeza que deseja excluir este usuário? Todos os dados do usuário serão perdidos.')) return;
+      // Inicializar com false para todas as permissões
+      const allPermKeys = [
+        'dashboard', 'cadastro', 'colocacao', 'remocao', 'geral', 'financeiro', 'excluidos', 'configuracoes',
+        'servicos_orcamento', 'servicos_orcamentos_gerados', 'servicos_realizar', 'servicos_concluidos', 'servicos_configuracoes',
+        'frota_abastecimento', 'frota_relatorio_abastecimento', 'frota_os', 'frota_historico_os', 'frota_relatorio_os', 'frota_configuracoes',
+        'dependentes'
+      ];
 
-      const user = getLoggedUser();
-      if (!user || user.role !== 'admin') { toast('Acesso negado.', true); return; }
+      allPermKeys.forEach(key => {
+        permissoes[key] = false;
+      });
 
-      const u = DB.users.find(x => x.id === id);
-      if (!u || u.role !== 'user' || u.ownerId !== user.id) { toast('Usuário não encontrado.', true); return; }
+      // Atualizar com os valores dos checkboxes
+      checkboxes.forEach(cb => {
+        const permKey = cb.dataset.perm;
+        if (permKey) {
+          permissoes[permKey] = cb.checked;
+        }
+      });
 
-      const ownerId = u.id;
-      DB.cacambas = DB.cacambas.filter(c => c.ownerId !== ownerId);
-      DB.motoristas = DB.motoristas.filter(m => m.ownerId !== ownerId);
-      DB.planos = DB.planos.filter(p => p.ownerId !== ownerId);
-      DB.locais = DB.locais.filter(l => l.ownerId !== ownerId);
-      DB.tiposMateriais = DB.tiposMateriais.filter(t => t.ownerId !== ownerId);
-      DB.clientes = DB.clientes.filter(c => c.ownerId !== ownerId);
-      DB.intercorrencias = DB.intercorrencias.filter(i => i.ownerId !== ownerId);
-      DB.cidades = DB.cidades.filter(c => c.ownerId !== ownerId);
-      DB.dependentes = DB.dependentes.filter(d => d.ownerId !== ownerId);
-      DB.veiculos = DB.veiculos.filter(v => v.ownerId !== ownerId);
-      DB.motoristasFrota = DB.motoristasFrota.filter(m => m.ownerId !== ownerId);
-      DB.abastecimentos = DB.abastecimentos.filter(a => a.ownerId !== ownerId);
-      DB.ordensServico = DB.ordensServico.filter(o => o.ownerId !== ownerId);
-      DB.historicoOS = DB.historicoOS.filter(h => h.ownerId !== ownerId);
+      // Garantir que dashboard sempre tenha acesso
+      permissoes.dashboard = true;
 
-      DB.users = DB.users.filter(x => x.id !== id);
+      // Atualizar permissões do usuário
+      user.permissoes = permissoes;
 
       await saveDB(DB);
-      toast('Usuário e todos os seus dados excluídos.');
-      boot();
-    }
-    window.deleteUsuario = deleteUsuario;
+      closeModal();
+      toast(`✅ Permissões de ${user.nome} atualizadas com sucesso!`);
+      renderUsuarios();
+    };
 
-    /* ============================================================
-       DEPENDENTES - APENAS USUÁRIO PRINCIPAL PODE ACESSAR (CORRIGIDO)
-    ============================================================ */
+    // ===== FUNÇÕES DE CADASTRO DE NOVO USUÁRIO (CADASTRO PRÓPRIO) =====
+    // CORRIGIDAS - EXPORTADAS CORRETAMENTE PARA O ESCOPO GLOBAL
+
+    window.abrirCadastro = function () {
+      console.log('abrirCadastro chamado');
+      const overlay = document.getElementById('overlay-cadastro');
+      if (overlay) {
+        overlay.classList.add('show');
+        const input = document.getElementById('cad-nome');
+        if (input) setTimeout(() => input.focus(), 100);
+      } else {
+        console.error('overlay-cadastro não encontrado');
+      }
+    }
+
+    window.fecharCadastro = function () {
+      console.log('fecharCadastro chamado');
+      const overlay = document.getElementById('overlay-cadastro');
+      if (overlay) {
+        overlay.classList.remove('show');
+        const form = document.getElementById('form-cadastro');
+        if (form) form.reset();
+      }
+    }
+
+    window.salvarCadastro = async function () {
+      console.log('salvarCadastro chamado');
+
+      try {
+        const nome = document.getElementById('cad-nome').value.trim();
+        const email = document.getElementById('cad-email').value.trim().toLowerCase();
+        const senha = document.getElementById('cad-senha').value;
+        const confirmarSenha = document.getElementById('cad-confirmar-senha').value;
+        const telefone = document.getElementById('cad-telefone').value.trim();
+        const cidade = document.getElementById('cad-cidade').value.trim();
+        const estado = document.getElementById('cad-estado').value;
+
+        if (!nome) { toast('Digite seu nome completo.', true); document.getElementById('cad-nome').focus(); return; }
+        if (!email) { toast('Digite seu e-mail.', true); document.getElementById('cad-email').focus(); return; }
+        if (!email.includes('@') || !email.includes('.')) { toast('Digite um e-mail válido.', true); document.getElementById('cad-email').focus(); return; }
+        if (!senha || senha.length < 6) { toast('A senha deve ter pelo menos 6 caracteres.', true); document.getElementById('cad-senha').focus(); return; }
+        if (senha !== confirmarSenha) { toast('As senhas não coincidem.', true); document.getElementById('cad-confirmar-senha').focus(); return; }
+
+        // Verificar se o e-mail já está cadastrado (apenas para usuários ativos)
+        const usuarioExistente = DB.users.find(u => u.email.toLowerCase() === email);
+        if (usuarioExistente) {
+          toast('Este e-mail já está cadastrado.', true);
+          document.getElementById('cad-email').focus();
+          return;
+        }
+
+        const admin = DB.users.find(u => u.role === 'admin');
+        if (!admin) {
+          toast('Nenhum administrador encontrado. Contate o suporte.', true);
+          return;
+        }
+
+        const agora = new Date();
+        const dataCadastro = agora.toISOString();
+        const dataVencimento = new Date(agora);
+        dataVencimento.setDate(dataVencimento.getDate() + 7);
+        const dataVencimentoStr = dataVencimento.toISOString();
+
+        const novoUsuario = {
+          id: uid(),
+          nome: nome,
+          email: email,
+          senha: senha,
+          role: 'user',
+          bloqueado: false,
+          ownerId: admin.id,
+          permissoes: {
+            dashboard: true,
+            cadastro: true,
+            colocacao: true,
+            remocao: true,
+            servicos: true,
+            geral: true,
+            configuracoes: false,
+            excluidos: false,
+            financeiro: true,
+            dependentes: true,
+            frota: false,
+            frota_abastecimento: false,
+            frota_relatorio_abastecimento: false,
+            frota_manutencao: false,
+            frota_configuracoes: false,
+            frota_os: false,
+            frota_historico_os: false,
+            frota_relatorio_os: false,
+            servicos_orcamento: false,
+            servicos_orcamentos_gerados: false,
+            servicos_realizar: false,
+            servicos_concluidos: false,
+            servicos_configuracoes: false
+          },
+          createdAt: dataCadastro,
+          createdBy: 'Sistema',
+          telefone: telefone,
+          cidade: cidade,
+          estado: estado,
+          subscriptionInfo: {
+            plano: 'Teste',
+            status: 'Ativo',
+            dataCadastro: dataCadastro,
+            dataInicio: dataCadastro,
+            dataVencimento: dataVencimentoStr,
+            diasRestantes: 7,
+            horasRestantes: 168,
+            ultimoAcesso: dataCadastro,
+            dataBloqueio: null,
+            dataUltimaLiberacao: dataCadastro,
+            historicoBloqueios: [],
+            historicoLiberacoes: [],
+            observacoes: 'Usuário criado via cadastro próprio. Período de teste de 7 dias.'
+          },
+          historicoAcessos: [{
+            data: dataCadastro,
+            ip: 'Cadastro inicial'
+          }]
+        };
+
+        DB.users.push(novoUsuario);
+        await saveDB(DB);
+
+        window.exibirConfirmacaoCadastro(nome, email);
+        window.fecharCadastro();
+        toast('Cadastro realizado com sucesso!');
+
+      } catch (e) {
+        console.error('Erro ao cadastrar:', e);
+        toast('Erro ao cadastrar: ' + e.message, true);
+      }
+    }
+
+    window.exibirConfirmacaoCadastro = function (nome, email) {
+      const body = document.getElementById('confirmacao-cadastro-body');
+      if (!body) {
+        console.error('confirmacao-cadastro-body não encontrado');
+        return;
+      }
+
+      body.innerHTML = `
+        <div style="text-align:center;padding:8px 0;">
+          <div style="font-size:48px;margin-bottom:12px;">🎉</div>
+          <p style="font-size:16px;font-weight:600;margin-bottom:8px;">Olá <strong>${esc(nome)}</strong>, seja bem-vindo(a)!</p>
+          <p style="font-size:14px;color:var(--text-muted);">Seu cadastro foi realizado com sucesso.</p>
+
+          <div style="background:var(--bg);border-radius:6px;padding:16px;margin:16px 0;text-align:left;border-left:4px solid var(--ok);">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <span style="font-size:20px;">🎁</span>
+              <span style="font-weight:600;">Você recebeu gratuitamente um período de avaliação de <strong style="color:var(--orange);">7 dias</strong>.</span>
+            </div>
+            <p style="font-size:13px;color:var(--text-muted);margin-top:4px;">
+              Após esse período sua conta será bloqueada automaticamente.<br>
+              Para continuar utilizando o sistema será necessário realizar a renovação.
+            </p>
+          </div>
+
+          <div style="background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;margin:12px 0;">
+            <div style="font-size:13px;color:var(--text-muted);">Valor da mensalidade:</div>
+            <div style="font-size:24px;font-weight:700;color:var(--orange);">R$ 49,90</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Pagamento via PIX</div>
+          </div>
+
+          <div style="background:var(--bg);border-radius:6px;padding:12px;margin:12px 0;border:1px dashed var(--orange);">
+            <div style="font-size:13px;color:var(--text-muted);">📱 Após realizar o pagamento envie o comprovante para:</div>
+            <div style="font-size:16px;font-weight:600;color:var(--orange);margin-top:4px;">
+              <a href="https://wa.me/5514996533010" target="_blank" style="color:var(--orange);text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+                <span style="font-size:20px;">💬</span> (14) 99653-3010
+              </a>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;font-size:12px;color:var(--text-muted);">
+            <strong>E-mail:</strong> ${esc(email)}
+          </div>
+        </div>
+      `;
+
+      const overlay = document.getElementById('overlay-confirmacao-cadastro');
+      if (overlay) overlay.classList.add('show');
+    }
+
+    window.fecharConfirmacaoCadastro = function () {
+      const overlay = document.getElementById('overlay-confirmacao-cadastro');
+      if (overlay) overlay.classList.remove('show');
+    }
+
+    // ===== FUNÇÕES DE VERIFICAÇÃO DE EXPIRAÇÃO =====
+
+    function verificarExpiracaoUsuario(user) {
+      if (!user || user.role === 'admin') return { expirado: false, mensagem: '' };
+      if (!user.subscriptionInfo) return { expirado: false, mensagem: '' };
+
+      const dataVencimento = new Date(user.subscriptionInfo.dataVencimento);
+      const agora = new Date();
+      const status = user.subscriptionInfo.status || 'Ativo';
+
+      if (status === 'Bloqueado' || status === 'Excluído') {
+        return { expirado: true, mensagem: 'Sua conta encontra-se bloqueada.', bloqueado: true };
+      }
+
+      if (agora > dataVencimento) {
+        return { expirado: true, mensagem: 'Seu período de utilização expirou.', bloqueado: true };
+      }
+
+      return { expirado: false, mensagem: '' };
+    }
+
+    function verificarAvisosVencimento(user) {
+      if (!user || user.role === 'admin') return false;
+      if (!user.subscriptionInfo) return false;
+
+      const dataVencimento = new Date(user.subscriptionInfo.dataVencimento);
+      const agora = new Date();
+      const diasRestantes = Math.ceil((dataVencimento - agora) / (1000 * 60 * 60 * 24));
+
+      const hoje = todayStr();
+      const ultimoAviso = localStorage.getItem(`aviso_vencimento_${user.id}_${hoje}`);
+      if (ultimoAviso) return false;
+
+      let mensagem = '';
+      let dias = 0;
+
+      if (diasRestantes === 3) {
+        mensagem = `Faltam apenas 3 dias para expirar sua assinatura.`;
+        dias = 3;
+      } else if (diasRestantes === 2) {
+        mensagem = `Faltam apenas 2 dias para expirar sua assinatura.`;
+        dias = 2;
+      } else if (diasRestantes === 1) {
+        mensagem = `Faltam apenas 1 dia para expirar sua assinatura.`;
+        dias = 1;
+      } else {
+        return false;
+      }
+
+      localStorage.setItem(`aviso_vencimento_${user.id}_${hoje}`, 'true');
+      window.exibirAvisoVencimento(mensagem, dias, dataVencimento);
+      return true;
+    }
+
+    window.exibirAvisoVencimento = function (mensagem, dias, dataVencimento) {
+      const body = document.getElementById('aviso-vencimento-body');
+      body.innerHTML = `
+        <div style="text-align:center;padding:8px 0;">
+          <div style="font-size:48px;margin-bottom:12px;">⏰</div>
+          <p style="font-size:18px;font-weight:600;color:var(--warn);">${mensagem}</p>
+          <p style="font-size:14px;color:var(--text-muted);margin-top:8px;">
+            Data de vencimento: <strong>${dataVencimento.toLocaleDateString('pt-BR')}</strong>
+          </p>
+          <div style="background:var(--bg);border-radius:6px;padding:12px;margin:12px 0;border:1px solid var(--warn);">
+            <div style="font-size:13px;color:var(--text-muted);">Para renovar sua assinatura:</div>
+            <div style="font-size:20px;font-weight:700;color:var(--orange);margin:4px 0;">R$ 49,90</div>
+            <div style="font-size:12px;color:var(--text-muted);">Pagamento via PIX</div>
+          </div>
+          <div style="font-size:13px;color:var(--text-muted);margin-top:8px;">
+            📱 Envie o comprovante pelo WhatsApp:<br>
+            <a href="https://wa.me/5514996533010" target="_blank" style="color:var(--orange);font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;margin-top:4px;">
+              <span style="font-size:18px;">💬</span> (14) 99653-3010
+            </a>
+          </div>
+        </div>
+      `;
+      document.getElementById('overlay-aviso-vencimento').classList.add('show');
+    }
+
+    window.fecharAvisoVencimento = function () {
+      document.getElementById('overlay-aviso-vencimento').classList.remove('show');
+    }
+
+    window.exibirBloqueioExpiracao = function () {
+      const body = document.getElementById('bloqueio-expiracao-body');
+      body.innerHTML = `
+        <div style="text-align:center;padding:8px 0;">
+          <div style="font-size:48px;margin-bottom:12px;">🚫</div>
+          <p style="font-size:18px;font-weight:600;color:var(--danger);">Seu período de utilização expirou.</p>
+          <p style="font-size:15px;color:var(--text);margin-top:8px;">Sua conta encontra-se bloqueada.</p>
+
+          <div style="background:var(--bg);border-radius:6px;padding:14px;margin:16px 0;border:1px solid var(--danger);">
+            <div style="font-size:13px;color:var(--text-muted);">Mensalidade:</div>
+            <div style="font-size:24px;font-weight:700;color:var(--orange);">R$ 49,90</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Pagamento via PIX</div>
+          </div>
+
+          <div style="background:var(--bg);border-radius:6px;padding:12px;margin:12px 0;border:1px dashed var(--orange);">
+            <div style="font-size:13px;color:var(--text-muted);">📱 Após realizar o pagamento envie o comprovante pelo WhatsApp:</div>
+            <div style="font-size:16px;font-weight:600;color:var(--orange);margin-top:4px;">
+              <a href="https://wa.me/5514996533010" target="_blank" style="color:var(--orange);text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+                <span style="font-size:20px;">💬</span> (14) 99653-3010
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('overlay-bloqueio-expiracao').classList.add('show');
+    }
+
+    window.fecharBloqueioExpiracao = function () {
+      document.getElementById('overlay-bloqueio-expiracao').classList.remove('show');
+    }
+
+    // ===== EVENTO DO BOTÃO DE CADASTRO =====
+
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('DOMContentLoaded - Configurando botão de cadastro');
+
+      const btnCadastro = document.getElementById('btn-criar-cadastro');
+      if (btnCadastro) {
+        btnCadastro.addEventListener('click', function (e) {
+          e.preventDefault();
+          console.log('Botão Criar Cadastro clicado');
+          if (typeof window.abrirCadastro === 'function') {
+            window.abrirCadastro();
+          } else {
+            console.error('abrirCadastro não está disponível');
+          }
+        });
+      } else {
+        console.error('btn-criar-cadastro não encontrado');
+      }
+    });
+
+    // ===== DEPENDENTES =====
 
     function renderDependentes() {
       const user = getLoggedUser();
 
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
       if (!user || user.role !== 'user') {
         toast('Acesso negado.', true);
         currentView = 'dashboard';
@@ -6453,57 +7314,42 @@
       const dependentes = getDependentes();
 
       document.getElementById('content').innerHTML = `
-                        <div class="page-head">
-                          <div><h1>👥 Dependentes</h1><div class="sub">Gerencie os dependentes que terão acesso ao seu banco de dados</div></div>
-                          <button class="btn btn-primary" onclick="openDependenteForm()">+ Novo Dependente</button>
-                        </div>
-                        <div class="table-wrap">
-                          ${dependentes.length ? `<table><thead><tr>
-                            <th>Nome</th><th>E-mail</th><th>Status</th><th>Permissões</th><th>Data Cadastro</th><th>Observações</th><th>Ações</th>
-                          </tr></thead><tbody>
-                          ${dependentes.map(d => `
-                            <tr>
-                              <td><strong>${esc(d.nome)}</strong></td>
-                              <td>${esc(d.email)}</td>
-                              <td>${d.bloqueado ? '<span class="badge badge-danger">Bloqueado</span>' : '<span class="badge badge-ok">Ativo</span>'}</td>
-                              <td style="white-space:normal;max-width:200px;">${Object.keys(PERM_LABELS).filter(k => k !== 'dependentes' && k !== 'usuarios' && d.permissoes && d.permissoes[k]).map(k => PERM_LABELS[k]).join(', ') || '<span class="sub">Nenhuma</span>'}</td>
-                              <td>${fmtDateTime(d.createdAt)}</td>
-                              <td>${esc(d.observacao || '—')}</td>
-                              <td class="actions-cell">
-                                <button class="icon-btn" title="Editar" onclick="openDependenteForm('${d.id}')">✎</button>
-                                <button class="icon-btn" title="${d.bloqueado ? 'Desbloquear' : 'Bloquear'}" onclick="toggleBloqueioDependente('${d.id}')">${d.bloqueado ? '🔓' : '🔒'}</button>
-                                <button class="icon-btn" title="Redefinir senha" onclick="resetSenhaDependente('${d.id}')">🔑</button>
-                                <button class="icon-btn btn-excluir" title="Excluir" onclick="deleteDependente('${d.id}')">🗑</button>
-                              </td>
-                            </tr>`).join('')}
-                          </tbody></table>` : `<div class="empty-state"><div class="big">👥</div>Nenhum dependente cadastrado ainda.<br>Clique em "Novo Dependente" para começar.</div>`}
-                        </div>
-                      `;
+        <div class="page-head">
+          <div><h1>👥 Dependentes</h1><div class="sub">Gerencie os dependentes que terão acesso ao seu banco de dados</div></div>
+          <button class="btn btn-primary" onclick="openDependenteForm()">+ Novo Dependente</button>
+        </div>
+        <div class="table-wrap">
+          ${dependentes.length ? `<table><thead><tr>
+            <th>Nome</th><th>E-mail</th><th>Status</th><th>Permissões</th><th>Data Cadastro</th><th>Observações</th><th>Ações</th>
+          </tr></thead><tbody>
+          ${dependentes.map(d => `
+            <tr>
+              <td><strong>${esc(d.nome)}</strong></td>
+              <td>${esc(d.email)}</td>
+              <td>${d.bloqueado ? '<span class="badge badge-danger">Bloqueado</span>' : '<span class="badge badge-ok">Ativo</span>'}</td>
+              <td style="white-space:normal;max-width:200px;">${Object.keys(PERM_LABELS).filter(k => k !== 'dependentes' && k !== 'usuarios' && d.permissoes && d.permissoes[k]).map(k => PERM_LABELS[k]).join(', ') || '<span class="sub">Nenhuma</span>'}</td>
+              <td>${fmtDateTime(d.createdAt)}</td>
+              <td>${esc(d.observacao || '—')}</td>
+              <td class="actions-cell">
+                <button class="icon-btn" title="Editar" onclick="openDependenteForm('${d.id}')">✎</button>
+                <button class="icon-btn" title="${d.bloqueado ? 'Desbloquear' : 'Bloquear'}" onclick="toggleBloqueioDependente('${d.id}')">${d.bloqueado ? '🔓' : '🔒'}</button>
+                <button class="icon-btn" title="Redefinir senha" onclick="resetSenhaDependente('${d.id}')">🔑</button>
+                <button class="icon-btn btn-excluir" title="Excluir" onclick="deleteDependente('${d.id}')">🗑</button>
+              </td>
+            </tr>`).join('')}
+          </tbody></table>` : `<div class="empty-state"><div class="big">👥</div>Nenhum dependente cadastrado ainda.<br>Clique em "Novo Dependente" para começar.</div>`}
+        </div>
+      `;
     }
-
-    /* ============================================================
-       SISTEMA DE PERMISSÕES DO DEPENDENTE - IDÊNTICO AO ADMINISTRADOR
-       ============================================================ */
 
     function openDependenteForm(id) {
       const user = getLoggedUser();
-
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
-      if (!user || user.role !== 'user') {
-        toast('Acesso negado.', true);
-        closeModal();
-        return;
-      }
+      if (!user || user.role !== 'user') { toast('Acesso negado.', true); return; }
 
       const dependentes = getDependentes();
       const d = id ? dependentes.find(x => x.id === id) : null;
 
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Se for edição, verifica se o dependente pertence ao usuário
-      if (id && d && !hasAccessToItem(d)) {
-        toast('Acesso negado.', true);
-        closeModal();
-        return;
-      }
+      if (id && d && !hasAccessToItem(d)) { toast('Acesso negado.', true); return; }
 
       const perms = d ? d.permissoes : {
         dashboard: true,
@@ -6520,22 +7366,20 @@
         frota_relatorio_abastecimento: false,
         frota_manutencao: false,
         frota_configuracoes: false,
+        frota_os: false,
+        frota_historico_os: false,
+        frota_relatorio_os: false,
         servicos_orcamento: false,
         servicos_orcamentos_gerados: false,
         servicos_realizar: false,
         servicos_concluidos: false,
-        servicos_configuracoes: false,
-        frota_os: false,
-        frota_historico_os: false,
-        frota_relatorio_os: false
+        servicos_configuracoes: false
       };
 
-      // ===== CONSTRUIR O MESMO LAYOUT DE PERMISSÕES DO ADMIN =====
       let permissoesHtml = `
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
       `;
 
-      // Card Dashboard
       permissoesHtml += `
         <div class="card" style="padding:12px;">
           <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
@@ -6549,7 +7393,6 @@
         </div>
       `;
 
-      // Card Caçambas
       const cacambasPerms = ['cadastro', 'colocacao', 'remocao', 'geral', 'configuracoes', 'excluidos', 'financeiro'];
       const cacambasLabels = {
         cadastro: 'Cadastro de Clientes',
@@ -6576,7 +7419,6 @@
         </div>
       `;
 
-      // Card Serviços
       const servicosPerms = ['servicos_orcamento', 'servicos_orcamentos_gerados', 'servicos_realizar', 'servicos_concluidos', 'servicos_configuracoes'];
       const servicosLabels = {
         servicos_orcamento: 'Novo Orçamento',
@@ -6601,7 +7443,6 @@
         </div>
       `;
 
-      // Card Frota
       const frotaPerms = ['frota_abastecimento', 'frota_relatorio_abastecimento', 'frota_os', 'frota_historico_os', 'frota_relatorio_os', 'frota_configuracoes'];
       const frotaLabels = {
         frota_abastecimento: 'Registro de Abastecimento',
@@ -6627,7 +7468,6 @@
         </div>
       `;
 
-      // Card Configurações
       permissoesHtml += `
         <div class="card" style="padding:12px;">
           <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
@@ -6641,7 +7481,6 @@
         </div>
       `;
 
-      // Card Usuários / Dependentes (Apenas para compatibilidade, mas dependentes não podem ver dependentes)
       permissoesHtml += `
         <div class="card" style="padding:12px;">
           <h4 style="margin:0 0 8px 0;font-size:14px;display:flex;align-items:center;gap:6px;">
@@ -6660,7 +7499,6 @@
 
       permissoesHtml += `</div>`;
 
-      // Montar o modal completo com o mesmo layout do administrador
       openModal(`
         <div class="modal-head"><h3>${d ? 'Editar Dependente' : 'Novo Dependente'}</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
         <div class="modal-body">
@@ -6668,10 +7506,10 @@
           <div class="field2"><label>E-mail</label><input id="d-email" type="email" value="${d ? esc(d.email) : ''}"></div>
           <div class="field2"><label>Senha</label><input id="d-senha" type="text" value="${d ? esc(d.senha) : ''}" placeholder="${d ? 'Deixe para manter a senha atual' : 'Senha de acesso'}"></div>
           <div class="field2"><label>Observações (opcional)</label><textarea id="d-obs" rows="2">${d ? esc(d.observacao || '') : ''}</textarea></div>
-          
+
           <label style="display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin:16px 0 8px;">Permissões do dependente</label>
           ${permissoesHtml}
-          
+
           <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:6px;border:1px solid var(--line);font-size:12px;color:var(--text-muted);">
             ⚠️ O dependente compartilhará o mesmo banco de dados que você. Todas as informações cadastradas por ele serão visíveis para você e para os demais dependentes.
           </div>
@@ -6686,20 +7524,13 @@
 
     async function saveDependente(id) {
       const user = getLoggedUser();
-
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
-      if (!user || user.role !== 'user') {
-        toast('Acesso negado.', true);
-        closeModal();
-        return;
-      }
+      if (!user || user.role !== 'user') { toast('Acesso negado.', true); return; }
 
       const nome = document.getElementById('d-nome').value.trim();
       const email = document.getElementById('d-email').value.trim().toLowerCase();
       const senha = document.getElementById('d-senha').value;
       const observacao = document.getElementById('d-obs').value.trim();
 
-      // ===== MESMA LÓGICA DE PERMISSÕES DO ADMINISTRADOR =====
       const allPermKeys = [
         'dashboard', 'cadastro', 'colocacao', 'remocao',
         'geral', 'configuracoes', 'excluidos', 'financeiro',
@@ -6725,7 +7556,6 @@
       if (id) {
         const d = dependentes.find(x => x.id === id);
         if (!d) { toast('Dependente não encontrado.', true); return; }
-        // 🔒 VERIFICAÇÃO DE SEGURANÇA
         if (!hasAccessToItem(d)) { toast('Acesso negado.', true); return; }
         d.nome = nome;
         d.email = email;
@@ -6759,12 +7589,7 @@
 
     async function toggleBloqueioDependente(id) {
       const user = getLoggedUser();
-
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
-      if (!user || user.role !== 'user') {
-        toast('Acesso negado.', true);
-        return;
-      }
+      if (!user || user.role !== 'user') { toast('Acesso negado.', true); return; }
 
       const dependentes = getDependentes();
       const d = dependentes.find(x => x.id === id);
@@ -6780,12 +7605,7 @@
 
     async function resetSenhaDependente(id) {
       const user = getLoggedUser();
-
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
-      if (!user || user.role !== 'user') {
-        toast('Acesso negado.', true);
-        return;
-      }
+      if (!user || user.role !== 'user') { toast('Acesso negado.', true); return; }
 
       const dependentes = getDependentes();
       const d = dependentes.find(x => x.id === id);
@@ -6810,12 +7630,7 @@
       if (!confirm('Tem certeza que deseja excluir este dependente?')) return;
 
       const user = getLoggedUser();
-
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA: Apenas usuários com role 'user' podem acessar
-      if (!user || user.role !== 'user') {
-        toast('Acesso negado.', true);
-        return;
-      }
+      if (!user || user.role !== 'user') { toast('Acesso negado.', true); return; }
 
       const dependentes = getDependentes();
       const d = dependentes.find(x => x.id === id);
@@ -7336,12 +8151,12 @@
         <div class="page-head">
           <div><h1>⚙️ Configurações da Frota</h1><div class="sub">Cadastro de veículos e motoristas</div></div>
         </div>
-        
+
         <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
           <button class="btn btn-primary btn-sm" onclick="renderFrotaVeiculos()">🚛 Veículos</button>
           <button class="btn btn-primary btn-sm" onclick="renderFrotaMotoristas()">👨‍✈️ Motoristas</button>
         </div>
-        
+
         <div id="frota-config-content">
           ${renderVeiculosList(veiculos)}
         </div>
@@ -7440,7 +8255,6 @@
       const veiculos = getVeiculos();
       const v = id ? veiculos.find(x => x.id === id) : null;
 
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA
       if (id && v && !hasAccessToItem(v)) {
         toast('Acesso negado.', true);
         return;
@@ -7478,7 +8292,6 @@
       if (id) {
         const v = veiculos.find(x => x.id === id);
         if (!v) { toast('Veículo não encontrado.', true); return; }
-        // 🔒 VERIFICAÇÃO DE SEGURANÇA
         if (!hasAccessToItem(v)) { toast('Acesso negado.', true); return; }
         v.placa = placa;
         await saveDB(DB);
@@ -7560,7 +8373,6 @@
       const motoristas = getMotoristasFrota();
       const m = id ? motoristas.find(x => x.id === id) : null;
 
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA
       if (id && m && !hasAccessToItem(m)) {
         toast('Acesso negado.', true);
         return;
@@ -7648,7 +8460,7 @@
         <div class="page-head">
           <div><h1>⛽ Registro de Abastecimento</h1><div class="sub">Cadastro e gerenciamento de abastecimentos da frota</div></div>
         </div>
-        
+
         ${veiculos.length === 0 ? `<div style="background:var(--warn);color:#1B1D21;padding:12px;border-radius:6px;margin-bottom:16px;border-left:4px solid var(--danger);">
           ⚠️ <strong>Nenhum veículo cadastrado.</strong> <a href="#" onclick="renderFrotaConfiguracoes();return false;" style="color:var(--orange);font-weight:600;">Cadastre um veículo</a> para registrar abastecimentos.
         </div>` : ''}
@@ -7766,7 +8578,6 @@
       const a = abastecimentos.find(x => x.id === id);
       if (!a) { toast('Registro não encontrado.', true); return; }
 
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA
       if (!hasAccessToItem(a)) { toast('Acesso negado.', true); return; }
 
       const veiculos = getVeiculos();
@@ -7834,7 +8645,6 @@
       const a = abastecimentos.find(x => x.id === id);
       if (!a) { toast('Registro não encontrado.', true); return; }
 
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA
       if (!hasAccessToItem(a)) { toast('Acesso negado.', true); return; }
 
       const veiculoId = document.getElementById('f-veiculo-abast-edit').value;
@@ -8134,7 +8944,7 @@
           <div><h1>🔧 Manutenção</h1><div class="sub">Ordens de serviço da frota</div></div>
           <button class="btn btn-primary" onclick="openOSForm()">+ Nova OS</button>
         </div>
-        
+
         ${veiculos.length === 0 ? `<div style="background:var(--warn);color:#1B1D21;padding:12px;border-radius:6px;margin-bottom:16px;border-left:4px solid var(--danger);">
           ⚠️ <strong>Nenhum veículo cadastrado.</strong> <a href="#" onclick="renderFrotaConfiguracoes();return false;" style="color:var(--orange);font-weight:600;">Cadastre um veículo</a> para criar ordens de serviço.
         </div>` : ''}
@@ -8250,7 +9060,6 @@
       const ordens = getOrdensServico();
       const o = id ? ordens.find(x => x.id === id) : null;
 
-      // 🔒 VERIFICAÇÃO DE SEGURANÇA
       if (id && o && !hasAccessToItem(o)) {
         toast('Acesso negado.', true);
         return;
@@ -8990,9 +9799,6 @@
     // ============================================================
 
     function renderServicos() {
-      // Esta função NÃO renderiza mais nenhuma página
-      // Ela apenas controla a abertura/fechamento do submenu
-
       const submenu = document.getElementById('sub-servicos');
       if (submenu) {
         const isServicosActive = ['servicos', 'servicos_orcamento', 'servicos_orcamentos_gerados',
@@ -9006,7 +9812,6 @@
         }
       }
 
-      // Se a view atual for 'servicos' (menu principal), redireciona para o primeiro subitem disponível
       if (currentView === 'servicos') {
         const user = getLoggedUser();
         const subItems = ['servicos_orcamento', 'servicos_orcamentos_gerados', 'servicos_realizar',
@@ -9023,7 +9828,6 @@
         }
 
         if (!found) {
-          // Se nenhum subitem estiver disponível, volta para dashboard
           currentView = 'dashboard';
         }
 
@@ -9328,10 +10132,10 @@
                         <input type="text" id="f-orc-bairro" placeholder="Bairro">
                     </div>
                 </div>
-                
+
                 <hr style="border-color:var(--line);margin:16px 0;">
                 <h4 style="font-size:14px;margin-bottom:8px;">📋 Informações do Serviço</h4>
-                
+
                 <div class="f-row">
                     <div class="field2">
                         <label>Tipo de Serviço *</label>
@@ -9359,7 +10163,7 @@
                         <input type="number" id="f-orc-valor-total" step="0.01" placeholder="0,00" readonly style="background:var(--line);cursor:default;font-weight:700;color:var(--orange);">
                     </div>
                 </div>
-                
+
                 <div class="f-row">
                     <div class="field2">
                         <label>Prazo de Execução</label>
@@ -9376,9 +10180,9 @@
                         <textarea id="f-orc-obs" rows="2" placeholder="Observações adicionais"></textarea>
                     </div>
                 </div>
-                
+
                 <hr style="border-color:var(--line);margin:16px 0;">
-                
+
                 <div class="f-row">
                     <div class="field2">
                         <label>Responsável</label>
@@ -9396,7 +10200,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;">
                     <button type="submit" class="btn btn-primary">💾 Salvar</button>
                     <button type="button" class="btn btn-ghost" onclick="limparFormOrcamento()">🧹 Limpar</button>
@@ -10939,7 +11743,7 @@
         <div class="page-head" style="margin-bottom:8px;">
             <div><h1 style="font-size:18px;">⚙️ Configurações do Módulo Serviços</h1></div>
         </div>
-        
+
         <div class="card" style="margin-bottom:16px;">
             <h3 style="margin-top:0;font-size:16px;">📋 Tipos de Serviço</h3>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
@@ -10956,7 +11760,7 @@
                 `).join('') : '<span class="sub">Nenhum tipo de serviço cadastrado.</span>'}
             </div>
         </div>
-        
+
         <div class="card">
             <h3 style="margin-top:0;font-size:16px;">⚙️ Configurações Gerais</h3>
             <form id="form-config-servicos" onsubmit="salvarConfiguracoesServicos(); return false;">
@@ -10976,7 +11780,7 @@
                         <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Quando o sistema deve avisar sobre os serviços programados</div>
                     </div>
                 </div>
-                
+
                 <div class="f-row">
                     <div class="field2">
                         <label>Prefixo do Orçamento</label>
@@ -10988,14 +11792,14 @@
                         <div class="checkline"><input type="checkbox" id="f-config-numeracao" ${configs.numeracaoAutomatica !== false ? 'checked' : ''}> Numeração automática</div>
                     </div>
                 </div>
-                
+
                 <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;">
                     <button type="submit" class="btn btn-primary">💾 Salvar Configurações</button>
                     <button type="button" class="btn btn-ghost" onclick="renderServicosTab('configuracoes-servicos')">↻ Restaurar</button>
                 </div>
             </form>
         </div>
-        
+
         <div class="card" style="margin-top:16px;">
             <h3 style="margin-top:0;font-size:16px;">📊 Resumo do Módulo</h3>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;">
@@ -11294,6 +12098,14 @@
         if (!user || user.bloqueado) {
           session = null;
           localStorage.removeItem(SESSION_KEY);
+        }
+      }
+
+      // Verificar avisos de vencimento para o usuário logado
+      if (session) {
+        const user = getLoggedUser();
+        if (user && user.role !== 'admin') {
+          verificarAvisosVencimento(user);
         }
       }
 
