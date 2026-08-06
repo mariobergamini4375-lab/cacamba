@@ -4093,6 +4093,33 @@
       await initServicos();
     }
 
+    // ============================================================
+    // FUNÇÃO PARA ATUALIZAR CLASSES DO MENU SEM RECONSTRUIR
+    // ============================================================
+
+    function updateActiveMenuItems() {
+      const nav = document.getElementById('sidebar-nav');
+      if (!nav) return;
+
+      // Remove .active de todos os itens
+      nav.querySelectorAll('.nav-item.active').forEach(el => {
+        el.classList.remove('active');
+      });
+
+      // Adiciona .active ao item correspondente à view atual
+      nav.querySelectorAll(`.nav-item[data-view="${currentView}"]`).forEach(el => {
+        el.classList.add('active');
+      });
+
+      // Atualiza submenus abertos
+      nav.querySelectorAll('.submenu').forEach(sub => {
+        const isActive = sub.querySelector(`.nav-item[data-view="${currentView}"]`) !== null;
+        sub.classList.toggle('open', isActive);
+        const arrow = sub.closest('.nav-item-parent')?.querySelector('.arrow');
+        if (arrow) arrow.classList.toggle('open', isActive);
+      });
+    }
+
     function renderSidebar(user) {
       const nav = document.getElementById('sidebar-nav');
 
@@ -4410,11 +4437,19 @@
             }
           }
 
+          // Atualiza currentView
           currentView = view;
+
+          // Fecha o sidebar em mobile
           if (window.innerWidth < 768) {
             document.getElementById('sidebar').classList.remove('open');
           }
-          boot();
+
+          // Atualiza a renderização da view (sem reconstruir o menu)
+          renderView();
+
+          // Atualiza o estado do menu (classes ativas) sem recriar o DOM
+          updateActiveMenuItems();
         });
       });
 
