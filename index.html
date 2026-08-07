@@ -2687,7 +2687,7 @@
           </div>
           <div
             style="margin-top:12px;padding:10px;background:var(--bg);border-radius:6px;border:1px solid var(--line);font-size:12px;color:var(--text-muted);">
-            🎁 Ao criar sua conta, você receberá <strong>7 dias de teste grátis</strong>!
+            🎁 Ao criar sua conta, você receberá <strong>10 dias de teste grátis</strong>!
           </div>
         </form>
       </div>
@@ -7070,7 +7070,7 @@
         const agora = new Date();
         const dataCadastro = agora.toISOString();
         const dataVencimento = new Date(agora);
-        dataVencimento.setDate(dataVencimento.getDate() + 7);
+        dataVencimento.setDate(dataVencimento.getDate() + 10);
         const dataVencimentoStr = dataVencimento.toISOString();
 
         const novoUsuario = {
@@ -7117,14 +7117,14 @@
             dataCadastro: dataCadastro,
             dataInicio: dataCadastro,
             dataVencimento: dataVencimentoStr,
-            diasRestantes: 7,
-            horasRestantes: 168,
+            diasRestantes: 10,
+            horasRestantes: 240,
             ultimoAcesso: dataCadastro,
             dataBloqueio: null,
             dataUltimaLiberacao: dataCadastro,
             historicoBloqueios: [],
             historicoLiberacoes: [],
-            observacoes: 'Usuário criado via cadastro próprio. Período de teste de 7 dias.'
+            observacoes: 'Usuário criado via cadastro próprio. Período de teste de 10 dias.'
           },
           historicoAcessos: [{
             data: dataCadastro,
@@ -7161,7 +7161,7 @@
           <div style="background:var(--bg);border-radius:6px;padding:16px;margin:16px 0;text-align:left;border-left:4px solid var(--ok);">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
               <span style="font-size:20px;">🎁</span>
-              <span style="font-weight:600;">Você recebeu gratuitamente um período de avaliação de <strong style="color:var(--orange);">7 dias</strong>.</span>
+              <span style="font-weight:600;">Você recebeu gratuitamente um período de avaliação de <strong style="color:var(--orange);">10 dias</strong>.</span>
             </div>
             <p style="font-size:13px;color:var(--text-muted);margin-top:4px;">
               Após esse período sua conta será bloqueada automaticamente.<br>
